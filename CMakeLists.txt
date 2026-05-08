@@ -3,4 +3,7 @@ project(DSA)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(DSA main.cpp)
+add_executable(DSA
+        Sorting/QuickSort.cpp
+        Sorting/MergeSort.cpp
+)
