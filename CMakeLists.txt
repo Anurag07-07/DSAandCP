@@ -9,4 +9,8 @@ add_executable(DSA
         Neetcode/ArrayandHashing/ConcatenationofArray.cpp
         Neetcode/ArrayandHashing/ContainsDuplicate.cpp
         Neetcode/ArrayandHashing/ValidAnagram.cpp
+        Recursion/Print1toN.cpp
+        Recursion/PrintNto1.cpp
+        Recursion/PrintallEven.cpp
+        Recursion/PrintAllOdd.cpp
 )
