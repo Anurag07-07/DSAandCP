@@ -13,4 +13,11 @@ add_executable(DSA
         Recursion/PrintNto1.cpp
         Recursion/PrintallEven.cpp
         Recursion/PrintAllOdd.cpp
+        Recursion/FactorialofN.cpp
+        Recursion/SumofN.cpp
+        Recursion/Powerof2.cpp
+        Recursion/SumofSquare.cpp
+        Recursion/FibonacciSeries.cpp
+        Recursion/NthStair.cpp
+        Recursion/GCDofTwoNumber.cpp
 )
