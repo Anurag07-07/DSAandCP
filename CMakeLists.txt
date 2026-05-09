@@ -20,4 +20,12 @@ add_executable(DSA
         Recursion/FibonacciSeries.cpp
         Recursion/NthStair.cpp
         Recursion/GCDofTwoNumber.cpp
+        Biweekly182/ScoreValidator.cpp
+        Recursion/PrintTheArray.cpp
+        Recursion/SumofElement.cpp
+        Recursion/MinimumElement.cpp
+        Recursion/CheckPalindrone.cpp
+        Recursion/CountVowels.cpp
+        Recursion/ReverseTheString.cpp
+        Recursion/LowerCaseAndUpperCase.cpp
 )
