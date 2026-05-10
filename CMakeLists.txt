@@ -28,4 +28,8 @@ add_executable(DSA
         Recursion/CountVowels.cpp
         Recursion/ReverseTheString.cpp
         Recursion/LowerCaseAndUpperCase.cpp
+        Recursion/Subsequence.cpp
+        Recursion/GenerateParentheses.cpp
+        Recursion/SubsetSum.cpp
+        Recursion/TargetSum.cpp
 )
