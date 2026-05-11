@@ -32,4 +32,6 @@ add_executable(DSA
         Recursion/GenerateParentheses.cpp
         Recursion/SubsetSum.cpp
         Recursion/TargetSum.cpp
+        Recursion/PerfectSum.cpp
+        Recursion/TargetSumwithRepeation.cpp
 )
