@@ -34,4 +34,9 @@ add_executable(DSA
         Recursion/TargetSum.cpp
         Recursion/PerfectSum.cpp
         Recursion/TargetSumwithRepeation.cpp
+        Neetcode/ArrayandHashing/ReplaceElementswithGreatestonRightSide.cpp
+        Neetcode/ArrayandHashing/isSubssequence.cpp
+        Neetcode/ArrayandHashing/AppendCharacterstoStringtoMakeSubsequence.cpp
+        Neetcode/ArrayandHashing/ScoreofString.cpp
+        Neetcode/ArrayandHashing/LengthofLastWord.cpp
 )
