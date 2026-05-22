@@ -52,4 +52,19 @@ add_executable(DSA
         Codeforeces/Basics/1toN.cpp
         Codeforeces/Basics/TwoNumbers.cpp
         Codeforeces/Basics/WelcomeforyouwithCondition.cpp
+        Codeforeces/Basics/Multiples.cpp
+        Codeforeces/Basics/MaxandMIn.cpp
+        Codeforeces/Basics/Brothers.cpp
+        Codeforeces/Basics/CapitalorSmallorDigit.cpp
+        Codeforeces/Basics/Char.cpp
+        Codeforeces/Basics/Calculator2.cpp
+        Codeforeces/Basics/FirstDigit.cpp
+        Codeforeces/Basics/CoordinatesofaPoint.cpp
+        Codeforeces/Basics/AgeinDays.cpp
+        Codeforeces/Basics/Intervals.cpp
+        Codeforeces/Basics/SorttheNumber.cpp
+        Codeforeces/Basics/FloatorInt.cpp
+        Codeforeces/Basics/Comparison.cpp
+        Codeforeces/Basics/MathmaticalExpression.cpp
+        Codeforeces/Basics/TwoIntervals.cpp
 )
