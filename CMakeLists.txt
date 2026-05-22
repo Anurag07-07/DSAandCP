@@ -43,4 +43,13 @@ add_executable(DSA
         Arrays/TwoSum.cpp
         Arrays/TwoSumSorted.cpp
         Arrays/PairwithGivenDifference.cpp
+        Codeforeces/Basics/SayHello.cpp
+        Codeforeces/Basics/BasicDataTypes.cpp
+        Codeforeces/Basics/Calculator.cpp
+        Codeforeces/Basics/Difference.cpp
+        Codeforeces/Basics/AreaofCircle.cpp
+        Codeforeces/Basics/DigitSummition.cpp
+        Codeforeces/Basics/1toN.cpp
+        Codeforeces/Basics/TwoNumbers.cpp
+        Codeforeces/Basics/WelcomeforyouwithCondition.cpp
 )
