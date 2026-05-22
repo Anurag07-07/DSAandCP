@@ -39,4 +39,8 @@ add_executable(DSA
         Neetcode/ArrayandHashing/AppendCharacterstoStringtoMakeSubsequence.cpp
         Neetcode/ArrayandHashing/ScoreofString.cpp
         Neetcode/ArrayandHashing/LengthofLastWord.cpp
+        Arrays/SeprateOneandZero.cpp
+        Arrays/TwoSum.cpp
+        Arrays/TwoSumSorted.cpp
+        Arrays/PairwithGivenDifference.cpp
 )
