@@ -67,4 +67,6 @@ add_executable(DSA
         Codeforeces/Basics/Comparison.cpp
         Codeforeces/Basics/MathmaticalExpression.cpp
         Codeforeces/Basics/TwoIntervals.cpp
+        Codeforeces/Basics/TheLast2Digits.cpp
+        Codeforeces/Basics/HardCompare.cpp
 )
