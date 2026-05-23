@@ -69,4 +69,6 @@ add_executable(DSA
         Codeforeces/Basics/TwoIntervals.cpp
         Codeforeces/Basics/TheLast2Digits.cpp
         Codeforeces/Basics/HardCompare.cpp
+        Arrays/SubarraywitEqualSum.cpp
+        Arrays/MaximumSubarray.cpp
 )
