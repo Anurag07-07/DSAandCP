@@ -99,4 +99,5 @@ add_executable(DSA
         Codeforeces/Sheet2/ShapeTwo.cpp
         Codeforeces/Sheet2/ShapeThree.cpp
         Arrays/RainwaterTrapping.cpp
+        Arrays/MissingandRepeating.cpp
 )
