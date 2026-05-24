@@ -100,4 +100,6 @@ add_executable(DSA
         Codeforeces/Sheet2/ShapeThree.cpp
         Arrays/RainwaterTrapping.cpp
         Arrays/MissingandRepeating.cpp
+        Arrays/PrintSumofDiagonal.cpp
+        Arrays/BinarySearchinMatrix.cpp
 )
