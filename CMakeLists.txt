@@ -102,4 +102,8 @@ add_executable(DSA
         Arrays/MissingandRepeating.cpp
         Arrays/PrintSumofDiagonal.cpp
         Arrays/BinarySearchinMatrix.cpp
+        Strings/ReverseString.cpp
+        Strings/DefanginganIP.cpp
+        Strings/RotateString.cpp
+        Strings/Panagram.cpp
 )
