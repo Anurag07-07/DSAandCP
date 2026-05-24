@@ -106,4 +106,6 @@ add_executable(DSA
         Strings/DefanginganIP.cpp
         Strings/RotateString.cpp
         Strings/Panagram.cpp
+        Strings/LongestPalindrone.cpp
+        Strings/SortingtheSentence.cpp
 )
