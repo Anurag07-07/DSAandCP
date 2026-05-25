@@ -108,4 +108,10 @@ add_executable(DSA
         Strings/Panagram.cpp
         Strings/LongestPalindrone.cpp
         Strings/SortingtheSentence.cpp
+        Strings/SortVowels.cpp
+        Strings/AddStrings.cpp
+        Strings/RomantoInteger.cpp
+        Strings/FactorialofNumber.cpp
+        Strings/LongestSubstringWitoutRepeatingCharacter.cpp
+        Strings/SmallestDistinctWindow.cpp
 )

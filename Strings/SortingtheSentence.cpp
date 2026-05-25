@@ -1,47 +1,50 @@
-//
-// Created by anura on 24-05-2026.
-//
 #include <bits/stdc++.h>
 using namespace std;
 int main(int argc, char *argv[]) {
-    string s = "is2 sentence4 This1 a3";
-    //Calculate Total Words
+    string s;cin>>s;
     vector<string> ans(10,"");
-    int i = 0;
 
+    int i = 0;
     string temp;
     int count = 0;
     while (i<s.length()) {
         if (s[i]==' ') {
-            //Find the Position
-            int pos = temp[temp.size()-1]-'0';
-            //Remove the last char
+         //Find the Position of string
+         int index = temp[temp.size()-1]-'0';
+            //Remove the last number from string
             temp.pop_back();
-            //Put the string on the pos
-            ans[pos] = temp;
-            //Find the
+         //Insert the string
+         ans[index] = temp;
+            //Clear the String
             temp.clear();
-            count++;
+            //Increase the Word Count
+          count++;
         }else {
-            temp += s[i];
+            temp+=s[i];
         }
         i++;
     }
-    int pos = temp[temp.size()-1]-'0';
-    //Remove the last char
+
+    //Do this Again for last word
+    //Find the Position of string
+    int index = temp[temp.size()-1]-'0';
+    //Remove the last number from string
     temp.pop_back();
-    //Put the string on the pos
-    ans[pos] = temp;
-    //Find the
+    //Insert the string
+    ans[index] = temp;
+    //Clear the String
     temp.clear();
+    //Increase the Word Count
     count++;
 
-    string result = "";
-    for (int m = 1; m <= count; ++m) {
-        result += (ans[m]);
-        result += " ";
+    //Now create a string
+    string res;
+    for (int j = 1; j <=count; ++j) {
+        res+=ans[j];
+        res+=" ";
     }
+    //Remove the last space
+    res.pop_back();
 
-    result.pop_back();
-    return 0;
+    cout<<res<<endl;
 }
