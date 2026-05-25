@@ -114,4 +114,7 @@ add_executable(DSA
         Strings/FactorialofNumber.cpp
         Strings/LongestSubstringWitoutRepeatingCharacter.cpp
         Strings/SmallestDistinctWindow.cpp
+        Codeforeces/Practice/EvenHateOdd.cpp
+        Codeforeces/Practice/BeautifulYear.cpp
+        Codeforeces/Practice/When.cpp
 )
