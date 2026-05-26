@@ -119,4 +119,5 @@ add_executable(DSA
         Codeforeces/Practice/When.cpp
         Strings/LongestPrefixSuffix.cpp
         Strings/FindFirstIndex.cpp
+        Arrays/LongestHappyPrefix.cpp
 )
