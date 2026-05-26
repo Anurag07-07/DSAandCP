@@ -117,4 +117,6 @@ add_executable(DSA
         Codeforeces/Practice/EvenHateOdd.cpp
         Codeforeces/Practice/BeautifulYear.cpp
         Codeforeces/Practice/When.cpp
+        Strings/LongestPrefixSuffix.cpp
+        Strings/FindFirstIndex.cpp
 )
