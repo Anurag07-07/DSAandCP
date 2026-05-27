@@ -122,4 +122,8 @@ add_executable(DSA
         Arrays/LongestHappyPrefix.cpp
         Strings/ShortestPalindrone.cpp
         Strings/RepeatedStringMatch.cpp
+        BinarySearch/FirstandLastOccurance.cpp
+        BinarySearch/SearchInsertPosition.cpp
+        BinarySearch/Sqrt.cpp
+        BinarySearch/KthMissingPositive.cpp
 )
