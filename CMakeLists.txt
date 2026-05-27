@@ -120,4 +120,6 @@ add_executable(DSA
         Strings/LongestPrefixSuffix.cpp
         Strings/FindFirstIndex.cpp
         Arrays/LongestHappyPrefix.cpp
+        Strings/ShortestPalindrone.cpp
+        Strings/RepeatedStringMatch.cpp
 )
