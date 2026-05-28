@@ -129,5 +129,4 @@ add_executable(DSA
         Codeforeces/Bitmasking/CBL/UniqueNumber.cpp
         Codeforeces/Bitmasking/CBL/EvenorOdd.cpp
         Codeforeces/Bitmasking/CBL/getithbits.cpp
-        Codeforeces/Bitmasking/MochandMath.cpp
 )
