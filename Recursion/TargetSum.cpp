@@ -5,6 +5,7 @@ bool targetSum(vector<int> nums,int start,int target) {
     if (target==0) {
         return true;
     }
+
     if (start == nums.size() && target != 0) {
         return false;
     }
