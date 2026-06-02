@@ -2,10 +2,10 @@
 using namespace std;
 class ListNode{
   public:
-  int data;
+  int value;
   ListNode* next;
   ListNode(int value){
-    data = value;
+    this->value = value;
     next = nullptr;
   }
 };
@@ -35,7 +35,7 @@ void Traversal(ListNode* head){
   ListNode* temp = head;
   while (temp!=nullptr)
   {
-    cout<<temp->data<<"->";
+    cout<<temp->value<<"->";
     temp = temp->next;
   }
   
@@ -46,7 +46,7 @@ void RecursiveTraversal(ListNode* head){
   if(head==nullptr){
     return;
   }
-  cout<<head->data<<"->";
+  cout<<head->value<<"->";
   RecursiveTraversal(head->next);
 }
 
@@ -55,7 +55,7 @@ bool Search(ListNode* head,int target){
 
   while (temp!=nullptr)
   {
-    if (temp->data==target)
+    if (temp->value==target)
     {
       return true;
     }
@@ -71,7 +71,7 @@ bool RecursiveSearch(ListNode* head,int target){
     return false;
   }
 
-  if (head->data==target)
+  if (head->value==target)
   {
     return true;
   }
@@ -198,6 +198,11 @@ ListNode* RotateList(ListNode* head,int K){
 }
 
 bool Palindrone(ListNode* head,int K){
+  if (head->next==nullptr)
+  {
+    return 1;
+  }
+  
   ListNode* temp = head;
   //Count Node
   int count = 0;
@@ -234,7 +239,7 @@ bool Palindrone(ListNode* head,int K){
   ListNode* head2 = prev;
   while (head1!=nullptr)
   {
-    if (head1->data!=head2->data)
+    if (head1->value!=head2->value)
     {
       return 0;
     }
