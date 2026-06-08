@@ -63,6 +63,7 @@ ListNode* reverse(ListNode* head){
       //New head 3 Return kar do
       return newhead; 
     }
+    
     ListNode* reverseList(ListNode* head) {
       return reverse(head);
     }
@@ -127,11 +128,13 @@ ListNode* reverseinGroupofK(ListNode* head,int K){
   {
     return head;
   }
-  //Reverse kar do k element ko baki aage begh to wo rverse hoke aayega usko connect kar dena
 
+  //Reverse kar do k element ko baki aage begh to wo rverse hoke aayega usko connect kar dena
+  
   ListNode* curr = head;
   ListNode* next = nullptr;
   ListNode* prev = nullptr;
+
   int count = 0;
   while (curr!=nullptr && count<K)
   {
@@ -142,15 +145,21 @@ ListNode* reverseinGroupofK(ListNode* head,int K){
     count++;
   }
   
-  head->next = reverseinGroupofK(curr,K);
+  if (next!=nullptr)
+  {
+    head->next = reverseinGroupofK(next,K);
+  }
+  
   return prev;
 }
 
-int main(int argc, char const *argv[])
+int main()
 {
-  ListNode* h1 = CreateList(5);
-  ListNode* h2 = CreateList(4);
-  ListNode* ans = AddTwoNumber(h1,h2);
-  Traversal(ans);
+  int n;cin>>n;
+  ListNode* h1 = CreateList(n);
+  // ListNode* ans = AddTwoNumber(h1,h2);
+  int k;cin>>k;
+  ListNode* ans1 = reverseinGroupofK(h1,k);
+  Traversal(ans1);
   return 0;
 }
