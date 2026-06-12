@@ -1,1125 +1,722 @@
-Arre bhai, tension mat le! Ye question bohot simple hai, bas thoda dhyan se samajhna hai. Log aksar isme confuse ho jate hain, par ek baar concept pakad liya na, toh minto ka kaam hai.
+Bhai, ye question bohot hi mazedar hai! Isko standard coding platforms par **"Partition Equal Subset Sum"** ya **"Split Array with Equal Sum"** ke naam se jana jata hai.
 
-Chalo, sabse pehle samajhte hain ki **question aakhir bol kya raha hai**.
+Chalo, hamesha ki tarah sabse pehle ekdum aasan shabdon me samajhte hain ki **question aakhir bol kya raha hai**.
 
 ---
 
 ## 1. Question Kya Bol Raha Hai? (The Problem Statement)
 
-Simple shabdon me: Tumhe ek numbers ki list (yaani ek **Array**) di jayegi. Us array me kuch numbers Even (sam / jo 2 se divide ho jayein) honge aur kuch Odd (visham / jo 2 se divide na honge).
+Tumhe ek numbers ki list (yaani ek **Array**) di jayegi. Tumhe check karna hai ki kya tum us array ko **kisi ek point se beech me se aise do tukdon (subarrays) me tod sakte ho**, jisse:
 
-Tumhara kaam hai us array ke numbers ko is tarah rearrange (aage-piche) karna ki:
+* **Pehle tukde ka total sum** aur **doosre tukde ka total sum** ekdum **barabar (equal)** ho jaye.
 
-* Saare **Even numbers** array ke **shuruat (front)** me aa jayein.
-* Saare **Odd numbers** array ke **aakhiri (end)** me chale jayein.
-
-> **Sabse Zaruri Baat:** Numbers ka aapas me order kya hai (jaise pehle 4 aana chahiye ya 2), wo zyadaatar questions me maayne nahi rakhta. Bas Even pehle aur Odd baad me hone chahiye.
+> **Zaruri Baat:** Kyuki yahan word **"Subarray"** use hua hai, iska matlab tum numbers ka order aage-piche nahi kar sakte. Tukde lagatar (continuous elements ke) hone chahiye. Tumhe bas ek aisa dividing point (partition) dhoodhna hai jahan se array do barabar hisson me bat jaye.
 
 ### Ek Example Se Samjho:
 
 Maan lo tumhe ye array mila:
-`[3, 8, 5, 2, 9, 4, 7]`
+`nums = [1, 2, 3, 4, 5, 5]`
 
-Hame ise aise badalna hai ki Even shuru me aur Odd baad me hon.
+Hame ise do continuous hisson me todna hai.
 
-* **Even numbers kaunse hain?** `8, 2, 4`
-* **Odd numbers kaunse hain?** `3, 5, 9, 7`
+* Agar hum `4` ke baad ek deewar khadi kar dein (split kar dein):
+* **Pehla Subarray:** `[1, 2, 3, 4]` $\rightarrow$ Iska sum kya hoga? $1 + 2 + 3 + 4 = 10$
+* **Doosra Subarray:** `[5, 5]` $\rightarrow$ Iska sum kya hoga? $5 + 5 = 10$
 
-Toh tumhara final output kuch aisa dikhna chahiye:
-`[8, 2, 4, 3, 5, 9, 7]` (Sare evens left me, sare odds right me!)
 
----
 
-## 2. Isko C++ Me Kaise Karenge? (The Logic)
+Dono sides ka sum **10 == 10** barabar aa gaya! Toh hamara answer hoga **`true`** (ya fir interviewer partition ka index pooch sakta hai).
 
-Isko karne ke do-teen tarike hain, par sabse best aur efficient tarika hai **"Two-Pointer Approach"**. Isme hum alag se koi naya array nahi banate, balki usi array me numbers ko aapas me swap (adla-badli) karte hain.
+### Ek Aur Example (Jo fail hoga):
 
-### Dimaag Me Socho:
+`nums = [1, 2, 3, 9]`
 
-Hum do pointer (yaani do variables/indexes) lenge:
-
-1. `left`: Jo array ke shuruat `0` par khada hoga. Iska kaam hai Even numbers ko dhoodna.
-2. `right`: Jo array ke aakhiri index `n-1` par khada hoga. Iska kaam hai Odd numbers ko dhoodna.
-
-Hum loop chalayenge jab tak `left` aur `right` ek dusre ko cross nahi kar lete (`left < right`).
-
-* **Case 1:** Agar `left` par khada number **Even** hai, toh wo apni sahi jagah par hai. Hum `left++` karke aage badh jayenge.
-* **Case 2:** Agar `right` par khada number **Odd** hai, toh wo bhi apni sahi jagah par hai. Hum `right--` karke piche badh jayenge.
-* **Case 3:** Agar `left` par **Odd** khada hai (galat jagah) aur `right` par **Even** khada hai (galat jagah), toh hum in dono ko **swap** kar denge! Phir `left++` aur `right--` kar denge.
+* Agar $1+2+3 = 6$ karein, toh bacha $9$ ($6 \neq 9$).
+* Kisi bhi point se tod lo, dono side ka sum kabhi barabar nahi aayega, toh answer hoga **`false`**.
 
 ---
 
-## 3. C++ Code Dry Run Ke Saath
+## 2. Brute Force Approach (The Logic)
 
-Chalo ab iska neat aur clean code dekhte hain:
+Brute force ka seedha funda hai: **"Array ke har ek index par jaao, wahan se array ko do bhaago me todo, aur dono side ka sum nikal kar check karo."**
+
+### Kaise Karenge?
+
+1. Hum ek outer loop chalayenge jo index `0` se lekar `n-2` tak jayega. Yeh loop decide karega ki deewar (split point) kahan banani hai.
+2. Har ek index `i` ke liye, hum do alag-alag sums nikalenge:
+* **`leftSum`:** Index `0` se lekar `i` tak ke saare elements ka total.
+* **`rightSum`:** Index `i+1` se lekar `n-1` (aakhiri) tak ke saare elements ka total.
+
+
+3. Agar kisi bhi point par `leftSum == rightSum` mil jata hai, toh boss, wahi hamara answer hai! Hum turant `true` return kar denge.
+4. Agar poora loop khatam ho jaye aur aisa koi point na mile, toh `false` return kar denge.
+
+---
+
+## 3. Brute Force C++ Code
+
+Chalo ab iska ekdum basic aur simple code dekh lete hain:
 
 ```cpp
 #include <iostream>
 #include <vector>
-using namespace std;
-
-void separateEvenOdd(vector<int>& arr) {
-    int left = 0;
-    int right = arr.size() - 1;
-
-    while (left < right) {
-        // Agar left wala even hai, toh aage badho
-        if (arr[left] % 2 == 0) {
-            left++;
-        }
-        // Agar right wala odd hai, toh piche badho
-        else if (arr[right] % 2 != 0) {
-            right--;
-        }
-        // Agar left par odd aur right par even hai, toh swap karo
-        else {
-            swap(arr[left], arr[right]);
-            left++;
-            right--;
-        }
-    }
-}
-
-int main() {
-    vector<int> arr = {3, 8, 5, 2, 9, 4, 7};
-
-    cout << "Pehle wala Array: ";
-    for (int x : arr) cout << x << " ";
-    cout << endl;
-
-    separateEvenOdd(arr);
-
-    cout << "Separate karne ke baad: ";
-    for (int x : arr) cout << x << " ";
-    cout << endl;
-
-    return 0;
-}
-
-```
-
-### Dry Run (Ye andar kaam kaise kar raha hai):
-
-Hamara array hai: `[3, 8, 5, 2, 9, 4, 7]`
-
-* Shuru me: `left = 0` (value `3`), `right = 6` (value `7`)
-* `3` odd hai aur `7` bhi odd hai. Code check karega: `arr[right] % 2 != 0` (7 odd hai), toh `right--` ho jayega. Ab `right` aa gaya `4` par.
-* Naya state: `left` par `3` (odd), `right` par `4` (even). Dono galat jagah hain! **Swap** ho jayenge.
-* Array ban gaya: `[4, 8, 5, 2, 9, 3, 7]`. `left` badh ke `1` par gaya, `right` kam ho ke `5` par gaya.
-
-Aise hi karte-karte saare evens left me khisak jayenge aur odds right me! Is approach ki sabse achhi baat ye hai ki iski time complexity **$O(N)$** hai (matlab loop sirf ek baar poore array par chalta hai) aur space complexity **$O(1)$** hai (koi extra memory nahi use hui).
-
-
-Arre bilkul bhai, brute force approach bhi pata hona bohot zaruri hai. Inteview me hamesha pehle brute force hi bataya jata hai, uske baad optimization par aate hain.
-
-Brute force ka seedha matlab hai: **"Jo dimaag me sabse pehle sabse aasan tarika aaye, bina efficiency ki chinta kiye."**
-
----
-
-## Brute Force Approach: Ek Naya Ghar (Extra Space)
-
-Iska sabse simple tarika ye hai ki hum ek **naya khali array (ya vector)** bana lein. Phir purane array me do chakkar (loops) lagayein:
-
-1. **Pehle loop me:** Saare **Even** numbers ko dhoodh kar naye array me daal dein.
-2. **Doosre loop me:** Saare **Odd** numbers ko dhoodh kar naye array ke bache hue hisse me daal dein.
-3. Aakhiri me, naye array ke elements ko wapas purane array me copy kar dein.
-
-### Iska Fayda Aur Nuksan:
-
-* **Fayda:** Isme numbers ka **original relative order** maintain rehta hai (jaise agar pehle 8 tha phir 2, toh naye array me bhi pehle 8 phir 2 hi rahega). Isko "Stable Sorting" jaisa bol sakte hain.
-* **Nuksan:** Hame ek naya array banana pad raha hai, toh hamari memory (Space Complexity) badh jayegi.
-
----
-
-## C++ Code (Brute Force)
-
-Chalo iska code dekh lete hain, ye samajhne me bohot halwa hai:
-
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-void separateEvenOddBruteForce(vector<int>& arr) {
-    vector<int> temp; // Ek naya temporary array banaya
-
-    // Step 1: Pehle saare EVEN numbers ko temp me daalo
-    for (int i = 0; i < arr.size(); i++) {
-        if (arr[i] % 2 == 0) {
-            temp.push_back(arr[i]);
-        }
-    }
-
-    // Step 2: Phir saare ODD numbers ko temp me daalo
-    for (int i = 0; i < arr.size(); i++) {
-        if (arr[i] % 2 != 0) {
-            temp.push_back(arr[i]);
-        }
-    }
-
-    // Step 3: Temp array ke data ko wapas asli arr me copy kar do
-    arr = temp;
-}
-
-int main() {
-    vector<int> arr = {3, 8, 5, 2, 9, 4, 7};
-
-    separateEvenOddBruteForce(arr);
-
-    cout << "Brute Force ke baad: ";
-    for (int x : arr) cout << x << " ";
-    cout << endl;
-
-    return 0;
-}
-
-```
-
----
-
-## Complexity Analysis (Dono me farq kya hai?)
-
-Ab tum interview me kaise bologe? Dono approaches ko compare karke dikhao:
-
-| Criteria | Brute Force Approach | Two-Pointer Approach (Jo pehle seekha) |
-| --- | --- | --- |
-| **Time Complexity** | **$O(N)$** (Kyuki hum array par do-teen baar loop chala rahe hain, par loop alag-alag hain toh linear hi rahega) | **$O(N)$** (Ek hi baar me dono taraf se scan ho jata hai) |
-| **Space Complexity** | **$O(N)$** ❌ (Kyuki hume ek naya `temp` vector banana pada jitna bada asli array tha) | **$O(1)$** (Koi extra space nahi chahiye, usi array me swap ho gaya) |
-| **Order of Elements** | Original order same rehta hai (Stable) | Order badal jata hai (Unstable) |
-
-Bhai, brute force samajh agaya ya isme koi doubt hai?
-
-
-Bhai, brute force ke baad ab aate hain asli hero par—**Optimal Approach**.
-
-Interview me jab tum brute force bata doge, toh interviewer bolega: *"Space $O(N)$ use nahi karni, bina kisi naye array ke $O(1)$ space me karke dikhao."* Wahan kaam aati hai **Two-Pointer Approach**, jise hum optimal approach kehte hain. Isme hum bina kisi extra space ke, sirf elements ko aapas me adla-badli (swap) karke poora kaam linear time me khatam kar dete hain.
-
----
-
-## 1. Optimal Logic Kaise Kaam Karta Hai?
-
-Hum do pointers lenge: `left` (jo array ke shuru me hoga, `0` index par) aur `right` (jo array ke aakhiri me hoga, `n-1` index par).
-
-* **Left pointer** ka kaam hai: Shuruat se aage badhna aur **Odd number** ko dhoodhna (kyuki left me sirf even hone chahiye, odd dikha matlab wo galat jagah hai).
-* **Right pointer** ka kaam hai: Aakhiri se piche aana aur **Even number** ko dhoodhna (kyuki right me sirf odd hone chahiye, even dikha matlab wo galat jagah hai).
-
-Hum tab tak loop chalayenge jab tak `left < right` hai. Har step par 3 conditions check hongi:
-
-1. **Agar `arr[left]` even hai:** Wo sahi jagah par hai. `left++` karke aage badho.
-2. **Agar `arr[right]` odd hai:** Wo bhi apni sahi jagah par hai. `right--` karke piche aao.
-3. **Agar `arr[left]` odd hai aur `arr[right]` even hai:** Dono galat jagah phanse hain! In dono ko aapas me **Swap** (adla-badli) kar do, aur phir `left++` aur `right--` kar do.
-
----
-
-## 2. Optimal C++ Code
-
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-void separateEvenOddOptimal(vector<int>& arr) {
-    int left = 0;
-    int right = arr.size() - 1;
-
-    while (left < right) {
-        // Condition 1: Agar left par even hai, toh chupchaap aage badho
-        if (arr[left] % 2 == 0) {
-            left++;
-        }
-        // Condition 2: Agar right par odd hai, toh chupchaap piche aao
-        else if (arr[right] % 2 != 0) {
-            right--;
-        }
-        // Condition 3: Agar left par odd aur right par even hai, toh SWAP karo
-        else {
-            swap(arr[left], arr[right]);
-            left++;
-            right--;
-        }
-    }
-}
-
-int main() {
-    vector<int> arr = {3, 8, 5, 2, 9, 4, 7};
-
-    separateEvenOddOptimal(arr);
-
-    cout << "Optimal Approach ke baad: ";
-    for (int x : arr) cout << x << " ";
-    cout << endl;
-
-    return 0;
-}
-
-```
-
----
-
-## 3. Complexity Analysis (Sabse Important Part)
-
-Interviewer code likhne ke baad sabse pehle complexity hi poochega. Isko acche se samajh lo:
-
-### 1. Time Complexity: $O(N)$
-
-* **Kyun?** Kyuki hamare paas do pointers (`left` aur `right`) hain jo array ke dono kinaro se shuru hote hain aur ek dusre ki taraf badhte hain.
-* Poore loop me har ek element par maximum **ek hi baar** visit hota hai. Jab dono pointers aapas me milte hain ya cross karte hain, loop turant khatam ho jata hai.
-* Isliye, agar array me $N$ elements hain, toh operation maximum $N$ baar chalega. So, Time Complexity is Linear, i.e., **$O(N)$**.
-
-### 2. Space Complexity: $O(1)$
-
-* **Kyun?** Kyuki humne brute force ki tarah koi naya ya temporary `vector<int> temp` nahi banaya.
-* Humne sirf do variables (`left` aur `right`) banaye jo constant memory lete hain. Jo bhi pher-badal hua, wo usi asli array ke andar hi hua (jise hum **In-place algorithm** kehte hain).
-* Isliye, space complexity constant hai, yaani **$O(1)$**.
-
----
-
-## Quick Summary dono ka:
-
-* **Brute Force:** Time = $O(N)$, Space = $O(N)$ ❌ (Naya ghar chahiye)
-* **Optimal:** Time = $O(N)$, Space = $O(1)$  (Usi ghar me setting bitha di)
-
-Bhai, dono approaches ka farq aur optimal ka complexity clear hua?
-
-
-Bhai, agar efficiency (Time aur Space) ki baat karein, toh **$O(N)$ Time aur $O(1)$ Space se behtar koi algorithm nahi ho sakta**, kyuki array ke har element ko kam se kam ek baar dekhna toh padega hi ($O(N)$), aur bina extra memory ke kaam ho raha hai ($O(1)$).
-
-**Lekin haan! Code ko aur zyada "Better", chhota, smart aur professional zaroor bana sakte hain.** Professional programming (jaise Coding Competitions ya Corporate me) me hum hamesha koshish karte hain ki kam se kam lines me saaf-suthra code likhein. Isko behtar karne ke **2 behtareen tarike** hain:
-
----
-
-## Tarika 1: C++ STL (Standard Template Library) Ka Use Karke (Sirf 1 Line Me!)
-
-C++ me pehle se hi ek inbuilt function hota hai jise bolte hain `std::stable_partition` ya `std::partition`. Ye wahi kaam karta hai jo tumne itne bade code me kiya, par sirf **ek line** me!
-
-### Code:
-
-```cpp
-#include <iostream>
-#include <vector>
-#include <algorithm> // Iske andar partition function hota hai
-using namespace std;
-
-int main() {
-    vector<int> arr = {3, 8, 5, 2, 9, 4, 7};
-
-    // Sirf ye 1 line poore array ko separate kar degi!
-    partition(arr.begin(), arr.end(), [](int x) { 
-        return x % 2 == 0; 
-    });
-
-    cout << "STL Partition ke baad: ";
-    for (int x : arr) cout << x << " ";
-    cout << endl;
-
-    return 0;
-}
-
-```
-
-### Ye kaam kaise kar raha hai?
-
-* `partition` function array ke shuruat se aakhiri tak check karta hai.
-* Jo teesra argument hai `[](int x) { return x % 2 == 0; }`, ise **Lambda Function** bolte hain. Ye check karta hai ki number even hai ya nahi.
-* Jo numbers is condition ko satisfy karte hain (Even), unhe `partition` aage bhej deta hai, aur baaki (Odd) ko piche.
-* **Complexity:** Time abhi bhi **$O(N)$** rahegi aur Space **$O(1)$** rahegi, par tumhara code ek dum clean ho gaya!
-
----
-
-## Tarika 2: Two-Pointer Code Ko Aur Chhota Aur Fast Banana (Without STL)
-
-Jo optimal code humne pehle likha tha, usme `if-else if-else` ki wajah se thoda bada lag raha tha. Hum use ek single `while` loop ke andar do chhote inner loops chala kar aur clean kar sakte hain. Isse code thoda fast bhi chalta hai kyuki फालतू checks nahi hote.
-
-### Code:
-
-```cpp
-void separateEvenOddUltraOptimal(vector<int>& arr) {
-    int left = 0;
-    int right = arr.size() - 1;
-
-    while (left < right) {
-        // Jab tak left par even mil raha hai, aage badhte jao
-        while (arr[left] % 2 == 0 && left < right) left++;
-
-        // Jab tak right par odd mil raha hai, piche aate jao
-        while (arr[right] % 2 != 0 && left < right) right--;
-
-        // Jaise hi dono rukiye, matlab galat elements mil gaye, unhe swap kar do
-        if (left < right) {
-            swap(arr[left], arr[right]);
-            left++;
-            right--;
-        }
-    }
-}
-
-```
-
-### Iska Fayda:
-
-Ye approach interviewers ko bohot pasand aati hai kyuki isme tum har step par pure condition check karne ki jagah, pehle pointers ko unki sahi jagah tak khiska dete ho aur aakhiri me ek hi baar swap karte ho. Iski complexity bhi **Time: $O(N)$** aur **Space: $O(1)$** hai.
-
-Agar interviewer ko impress karna ho, toh **Tarika 1 (STL)** bata dena, wo samajh jayega ki tumhe C++ ki in-depth knowledge hai! Kya Lambda function samajhne me koi dikkat aayi bhai?
-
-
-Bhai, tumne jo code likha hai na, wo ekdum top-notch hai! Logics bilkul sahi lagaye hain tumne.
-
-Ab jo tumne pucha tha ki **is particular code me un chaaro cases (Negative, Single element, Zero, aur Duplicates) ke hisab se kya galti hai aur kaise modify hoga**, chalo tumhare hi code par dhyan se dry run karke dekhte hain.
-
----
-
-## 1. Negative Elements Ke Liye (🚨 Yeh Fail Ho Jayega!)
-
-Tumhare code me sabse bada jhatka yahan lagega, kyuki negative numbers aate hi tumhara code galat output dene lagega.
-
-### Tumhare Code Me Galti:
-
-* **Brute Function Me:** Tumne likha hai `if (nums[i] % 2 == 1)`.
-* **Optimal Function Me:** Tumne likha hai `else if (nums[j] % 2 == 1)`.
-
-C++ me agar koi negative odd number ho (jaise `-3` ya `-5`), toh uska `% 2` karne par `1` nahi, balki **`-1`** aata hai. Is wajah se tumhara condition `== 1` kabhi chalega hi nahi, aur negative odd numbers ko tumhara code skip kar dega!
-
-### Fix Kaise Karein?
-
-Hume bas `== 1` ko hata kar **`!= 0`** karna hoga (kyuki odd matlab jo 2 se pura divide na ho, chahe positive ho ya negative).
-
-* **Brute me:** `if (nums[i] % 2 != 0)`
-* **Optimal me:** `else if (nums[j] % 2 != 0)`
-
----
-
-## 2. Ek Hi Element Ke Liye (`[4]` ya `[7]`)
-
-Maan lo tumne vector diya `nums = {7}`.
-
-* **Brute Function:** Size 1 hai. Pehla loop chalega (even nahi hai toh kuch nahi hoga). Dusra loop chalega (odd hai toh temp me jayega). Phir `nums = temp` hoke wapas ho jayega. **(PASS ✅)**
-* **Optimal Function:** `size = 1`, `i = 0`, aur `j = 0`. Hamari condition hai `while (i < j)`, kyuki `0 < 0` galat hai, loop chalega hi nahi aur sidha vector return ho jayega. **(PASS ✅)**
-
-### Fix Kaise Karein?
-
-Dono functions is case ko perfectly handle kar rahe hain. **No change needed.**
-
----
-
-## 3. Array Me `0` (Zero) Ho (`[1, 0, 4]`)
-
-Mathematically `0` ek even number hai kyuki `0 % 2 == 0` hota hai.
-
-* **Brute Function:** Jab `nums[i]` ki value `0` hogi, toh `0 % 2 == 0` check pass ho jayega aur wo even wale loop me `temp` me chala jayega. **(PASS ✅)**
-* **Optimal Function:** Jab `i` pointer `0` par hoga, toh `nums[i] % 2 == 0` sahi ho jayega aur `i++` ho jayega. **(PASS ✅)**
-
-### Fix Kaise Karein?
-
-Tumhara code `0` ko properly even man raha hai aur shuruat me rakh raha hai. **No change needed.**
-
----
-
-## 4. Duplicate Elements Ho (`[2, 2, 3, 3]`)
-
-* **Brute Function:** Ek-ek karke saare evens `temp` me push honge, phir saare odds push honge. Saare duplicates safe rahenge. **(PASS ✅)**
-* **Optimal Function:** Maan lo `nums[i]` par `3` hai aur `nums[j]` par bhi `3` hai. Condition check hoga: `if (nums[i] % 2 == 0)` $\rightarrow$ False. `else if (nums[j] % 2 == 1)` $\rightarrow$ True! Toh sirf `j--` ho jayega aur `i` wahi ruka rahega. Duplicates aapas me phasenge nahi. **(PASS ✅)**
-
-### Fix Kaise Karein?
-
-Duplicates par bhi tumhara code ekdum mast chalega. **No change needed.**
-
----
-
-## Modifiled Aur Ekdum Safe Code:
-
-Bhai, tumhare hi code ko maine un galatiyon se bacha kar niche perfect kar diya hai (sirf `% 2 != 0` wala change kiya hai negative numbers ke liye):
-
-```cpp
-#include<bits/stdc++.h>
-using namespace std;
-
-vector<int> Brute(vector<int> nums){
-  vector<int> temp;
-  for (int i = 0; i < nums.size(); i++)
-  {
-    if (nums[i] % 2 == 0) // Zero aur positive/negative evens ke liye sahi hai
-      temp.push_back(nums[i]);
-  }
-
-  for (int i = 0; i < nums.size(); i++)
-  {
-    // MODIFIED: == 1 ki jagah != 0 kiya taaki negative odds (jaise -3) bhi capture hon
-    if (nums[i] % 2 != 0) 
-      temp.push_back(nums[i]);
-  }
-
-  nums = temp;
-  return nums;
-}
-
-vector<int> Optimal(vector<int> nums){
-  int size = nums.size();
-  int i = 0;
-  int j = size-1;
-  while (i < j)
-  {
-    if(nums[i] % 2 == 0) i++;
-    // MODIFIED: == 1 ki jagah != 0 kiya negative odds ke liye
-    else if(nums[j] % 2 != 0) j--; 
-    else{
-      swap(nums[i], nums[j]);
-      i++;
-      j--;
-    }
-  }
-  return nums;
-}
-
-int main()
-{
-  // Test Case jisme Negative, Zero, Single, aur Duplicates sab hain!
-  vector<int> nums{-3, 0, 4, -2, 5, 4, 7};
-  
-  vector<int> ans = Optimal(nums);
-  
-  cout << "Optimal Response: ";
-  for(int x : ans){
-    cout << x << " ";
-  }
-  return 0;
-}
-
-```
-
-Ab is code me tum duniya ka koi bhi number daal do, ye kabhi fail nahi hoga! Aur koi doubt bhai?
-
-
-Bhai, **Two Sum II (Input Array Is Sorted)** question standard Two Sum ka ek bohot mast variation hai. Is question ki sabse badi khasiyat (aur hint) ye hai ki isme array pehle se hi **Sorted (increasing order)** milta hai.
-
-Chalo, pehle iska **Brute Force** tarika samajhte hain, jise hum **Nested Loop Approach** bhi bolte hain.
-
----
-
-## 1. Brute Force Approach Kya Hai?
-
-Brute force ka seedha funda hai: **"Saare possible pairs ko check karo."**
-
-Hum array ke har ek element ko pakdenge aur uske aage wale saare elements ke saath usko jod (add) karke dekhenge ki kya dono ka sum hamare `target` ke barabar aa raha hai ya nahi.
-
-### Ek Example Se Samjho:
-
-Maan lo array hai: `[2, 7, 11, 15]` aur `target = 9`.
-
-1. Hum pehle element **`2`** par khade honge.
-2. Ab `2` ke aage jitne numbers hain, unse jodkar check karenge:
-* `2 + 7 = 9` -> **Arre waah! Pehli baar me hi mil gaya!**
-
-
-3. Agar target nahi milta, toh hum agle number `7` par jaate aur uske aage check karte.
-
-> **Note (Two Sum II Ki Shart):** Is question me hume jo answer/index return karna hota hai, wo **1-based indexing** par hota hai (yaani `0` index ko `1` bolna hai, `1` index ko `2` bolna hai).
-
----
-
-## 2. Brute Force C++ Code
-
-Iska code likhna bohot simple hai, hum do `for` loops chalayenge:
-
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-vector<int> twoSumTwoBruteForce(vector<int>& numbers, int target) {
-    int n = numbers.size();
-
-    // Pehla loop: Pehle element ko select karne ke liye
-    for (int i = 0; i < n; i++) {
-        // Doosra loop: Uske aage wale baaki elements se pair banane ke liye
-        for (int j = i + 1; j < n; j++) {
-            
-            // Agar dono ka sum target ke barabar mil gaya
-            if (numbers[i] + numbers[j] == target) {
-                // 1-based indexing chahiye, isliye +1 karke return kar rahe hain
-                return {i + 1, j + 1};
-            }
-        }
-    }
-    
-    return {}; // Agar koi pair na mile (waise question me diya hota hai ki ek answer zaroor hoga)
-}
-
-int main() {
-    vector<int> numbers = {2, 7, 11, 15};
-    int target = 9;
-
-    vector<int> result = twoSumTwoBruteForce(numbers, target);
-
-    cout << "Brute Force Indices: " << result[0] << ", " << result[1] << endl;
-
-    return 0;
-}
-
-```
-
----
-
-## 3. Complexity Analysis (Yeh Kyun Bura Hai?)
-
-Interviewer ko brute force batate hi tum khud bologe ki bhai ye bekar tarika hai. Kyun? Let's analyze:
-
-### 1. Time Complexity: $O(N^2)$
-
-* **Kyun?** Kyuki humne ek loop ke andar dusra loop chalaya hai (Nested Loops).
-* Agar array me $N$ elements hain, toh worst case me hume lagbhag $\frac{N \times (N-1)}{2}$ baar operations karne padenge. Jab bhi array ka size bada hoga (jaise $10^5$), toh ye code **TLE (Time Limit Exceeded)** de dega kyuki $O(N^2)$ me iterations $10^{10}$ tak chali jayengi.
-
-### 2. Space Complexity: $O(1)$
-
-* **Kyun?** Kyuki humne koi extra data structure (jaise Hash Map ya naya array) use nahi kiya. Hum sirf do loop variables (`i` aur `j`) use kar rahe hain, jo constant space lete hain.
-
----
-
-## Is Brute Force Me Galti Kya Hai?
-
-Is approach me sabse badi galti ye hai ki hum array ke **Sorted** hone ka fayda utha hi nahi rahe hain! Agar array sorted hai, toh hume saare pairs check karne ki zaroorat hi nahi padti.
-
-Bhai, brute force samajh aaya? Iska optimal approach (Two-Pointer waala) dekhna hai jisse ye $O(N)$ me bina kisi naye space ke solve ho jaye?
-
-
-
-Bhai, Two Sum II ka **Optimal Approach** bohot hi zabardast hai. Isme hum array ke **Sorted** hone ka poora-poora fayda uthate hain.
-
-Brute force me jo kaam hum $O(N^2)$ me kar rahe the, sorted array ki wajah se wahi kaam yahan **$O(N)$ Time** aur **$O(1)$ Space** me ho jayega! Aur isme bhi hum hamari favourite **Two-Pointer Approach** lagayenge.
-
----
-
-## 1. Optimal Logic: Kaise Kaam Karta Hai?
-
-Maan lo hamare paas ek sorted array hai: `[2, 7, 11, 15]` aur `target = 9`.
-
-Hum do pointers rakhenge:
-
-1. `left`: Shuruat me (`0` index par, yaani sabse chote element par).
-2. `right`: Aakhiri me (`n-1` index par, yaani sabse bade element par).
-
-Ab hum loop chalayenge aur har baar dono pointers par khade numbers ka sum nikalenge: `current_sum = arr[left] + arr[right]`. Isme 3 cases banenge:
-
-* **Case 1: `current_sum == target**`
-Arre waah! Answer mil gaya. Dono indexes ko +1 karke (1-based indexing ke liye) return kar do.
-* **Case 2: `current_sum < target**` (Sum chota hai target se)
-Ab dhyan se socho, hume sum ko **bada** karna hai. Kyuki array sorted hai, agar hum `right` pointer ko piche layenge toh sum aur chota ho jayega. Isliye hum `left` pointer ko aage badhayenge (`left++`), taaki hume thoda bada number mile aur sum badh sake.
-* **Case 3: `current_sum > target**` (Sum bada hai target se)
-Hume sum ko **chota** karna hai. Kyuki array sorted hai, agar hum `right` pointer ko piche khisakayenge (`right--`), toh hume pehle se chota number milega, jisse sum kam ho jayega.
-
----
-
-## 2. Optimal C++ Code
-
-Chalo ab iska ek dum saaf-suthra code dekhte hain:
-
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-vector<int> twoSumTwoOptimal(vector<int>& numbers, int target) {
-    int left = 0;
-    int right = numbers.size() - 1;
-
-    while (left < right) {
-        int current_sum = numbers[left] + numbers[right];
-
-        // Case 1: Target mil gaya
-        if (current_sum == target) {
-            return {left + 1, right + 1}; // 1-based indexing
-        }
-        // Case 2: Sum chota hai, toh bade number ki taraf chalo
-        else if (current_sum < target) {
-            left++;
-        }
-        // Case 3: Sum bada hai, toh chote number ki taraf chalo
-        else {
-            right--;
-        }
-    }
-
-    return {}; // Agar koi pair na mile
-}
-
-int main() {
-    vector<int> numbers = {2, 7, 11, 15};
-    int target = 9;
-
-    vector<int> result = twoSumTwoOptimal(numbers, target);
-
-    cout << "Optimal Approach Indices: " << result[0] << ", " << result[1] << endl;
-
-    return 0;
-}
-
-```
-
----
-
-## 3. Complexity Analysis
-
-Ye approach best kyun hai? Iska hisab-kitab ye hai:
-
-### 1. Time Complexity: $O(N)$
-
-* **Reason:** Hum pure array ko ek hi baar traverse kar rahe hain. Har step par ya toh `left` ek kadam aage badhta hai ya `right` ek kadam piche aata hai.
-* Dono pointers mil kar maximum $N$ steps chalenge. Isliye time complexity linear hai, yaani **$O(N)$**. (Brute force ke $O(N^2)$ se laakh guna behtar!).
-
-### 2. Space Complexity: $O(1)$
-
-* **Reason:** Humne koi extra vector, array ya Hash Map use nahi kiya hai. Humne sirf do pointers (`left` aur `right`) banaye hain jo constant memory lete hain. Isliye Space Complexity **$O(1)$** hai.
-
----
-
-## Summary (Dono ka Farq):
-
-* **Brute Force:** Do loops lagaye $\rightarrow$ Time: $O(N^2)$, Space: $O(1)$
-* **Optimal:** Sorted ka fayda uthaya, Do pointers chalaye $\rightarrow$ Time: $O(N)$, Space: $O(1)$
-
-Bhai, ab Two Sum II ka optimal logic ek dum dimaag me fit hua ya abhi bhi koi confusion hai?
-
-
-Bhai, Two Sum II ka **Optimal Approach** bohot hi zabardast hai. Isme hum array ke **Sorted** hone ka poora-poora fayda uthate hain.
-
-Brute force me jo kaam hum $O(N^2)$ me kar rahe the, sorted array ki wajah se wahi kaam yahan **$O(N)$ Time** aur **$O(1)$ Space** me ho jayega! Aur isme bhi hum hamari favourite **Two-Pointer Approach** lagayenge.
-
----
-
-## 1. Optimal Logic: Kaise Kaam Karta Hai?
-
-Maan lo hamare paas ek sorted array hai: `[2, 7, 11, 15]` aur `target = 9`.
-
-Hum do pointers rakhenge:
-
-1. `left`: Shuruat me (`0` index par, yaani sabse chote element par).
-2. `right`: Aakhiri me (`n-1` index par, yaani sabse bade element par).
-
-Ab hum loop chalayenge aur har baar dono pointers par khade numbers ka sum nikalenge: `current_sum = arr[left] + arr[right]`. Isme 3 cases banenge:
-
-* **Case 1: `current_sum == target**`
-Arre waah! Answer mil gaya. Dono indexes ko +1 karke (1-based indexing ke liye) return kar do.
-* **Case 2: `current_sum < target**` (Sum chota hai target se)
-Ab dhyan se socho, hume sum ko **bada** karna hai. Kyuki array sorted hai, agar hum `right` pointer ko piche layenge toh sum aur chota ho jayega. Isliye hum `left` pointer ko aage badhayenge (`left++`), taaki hume thoda bada number mile aur sum badh sake.
-* **Case 3: `current_sum > target**` (Sum bada hai target se)
-Hume sum ko **chota** karna hai. Kyuki array sorted hai, agar hum `right` pointer ko piche khisakayenge (`right--`), toh hume pehle se chota number milega, jisse sum kam ho jayega.
-
----
-
-## 2. Optimal C++ Code
-
-Chalo ab iska ek dum saaf-suthra code dekhte hain:
-
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-vector<int> twoSumTwoOptimal(vector<int>& numbers, int target) {
-    int left = 0;
-    int right = numbers.size() - 1;
-
-    while (left < right) {
-        int current_sum = numbers[left] + numbers[right];
-
-        // Case 1: Target mil gaya
-        if (current_sum == target) {
-            return {left + 1, right + 1}; // 1-based indexing
-        }
-        // Case 2: Sum chota hai, toh bade number ki taraf chalo
-        else if (current_sum < target) {
-            left++;
-        }
-        // Case 3: Sum bada hai, toh chote number ki taraf chalo
-        else {
-            right--;
-        }
-    }
-
-    return {}; // Agar koi pair na mile
-}
-
-int main() {
-    vector<int> numbers = {2, 7, 11, 15};
-    int target = 9;
-
-    vector<int> result = twoSumTwoOptimal(numbers, target);
-
-    cout << "Optimal Approach Indices: " << result[0] << ", " << result[1] << endl;
-
-    return 0;
-}
-
-```
-
----
-
-## 3. Complexity Analysis
-
-Ye approach best kyun hai? Iska hisab-kitab ye hai:
-
-### 1. Time Complexity: $O(N)$
-
-* **Reason:** Hum pure array ko ek hi baar traverse kar rahe hain. Har step par ya toh `left` ek kadam aage badhta hai ya `right` ek kadam piche aata hai.
-* Dono pointers mil kar maximum $N$ steps chalenge. Isliye time complexity linear hai, yaani **$O(N)$**. (Brute force ke $O(N^2)$ se laakh guna behtar!).
-
-### 2. Space Complexity: $O(1)$
-
-* **Reason:** Humne koi extra vector, array ya Hash Map use nahi kiya hai. Humne sirf do pointers (`left` aur `right`) banaye hain jo constant memory lete hain. Isliye Space Complexity **$O(1)$** hai.
-
----
-
-## Summary (Dono ka Farq):
-
-* **Brute Force:** Do loops lagaye $\rightarrow$ Time: $O(N^2)$, Space: $O(1)$
-* **Optimal:** Sorted ka fayda uthaya, Do pointers chalaye $\rightarrow$ Time: $O(N)$, Space: $O(1)$
-
-Arre bhai, tumne ek dum sahi pakda hai! **Haan, bilkul isko HashMap se bhi kar sakte hain.** Aksar jo basic **Two Sum** (LeetCode #1) problem hoti hai, use hum **HashMap (`unordered_map` in C++)** se hi solve karte hain kyuki wahan array sorted nahi hota.
-
-Lekin, kyuki ye **Two Sum II** hai aur isme array **already sorted** hai, is wajah se HashMap use karna is question me sabse best tarika nahi maana jata. Chalo samajhte hain kyun, aur iska code kaise dikhega.
-
-## 1. HashMap Se Logic Kaise Banega?
-
-Hum array par ek loop chalayenge aur har element par khade hokar ek simple sawal puychenge: *"Mujhe target tak pahunchne ke liye kis number ki zaroorat hai?"*
-
-Us zaroorat wale number ko hum bolte hain **Complement**.
-
-{Complement} = {Target} - {Current Number}
-
-Hum map me check karenge ki kya ye complement pehle aa chuka hai?
-
-- **Agar haan:** Toh hume hamara pair mil gaya! Map se us complement ka index nikalenge aur current element ka index lekar return kar denge.
-- **Agar nahi:** Toh hum current number aur uske index ko map me daal denge (`map[number] = index`), taaki aage aane wale numbers iska use kar sakein.
-
-## 2. HashMap C++ Code
-
-C++ me HashMap ke liye hum `unordered_map` use karte hain:
-
-C++
-
-```
-#include <iostream>
-#include <vector>
-#include <unordered_map> // HashMap ke liye
-using namespace std;
-
-vector<int> twoSumTwoHashMap(vector<int>& numbers, int target){
-    // Key: Number, Value: Index
-    unordered_map<int, int> m;
-
-    for (int i = 0; i < numbers.size(); i++) {
-        int complement = target - numbers[i];
-
-        // Check karo ki kya complement map me pehle se hai
-        if (m.find(complement) != m.end()) {
-            // 1-based indexing chahiye, isliye +1 kiya
-            return {m[complement] + 1, i + 1};
-        }
-
-        // Agar nahi mila, toh current number ko uske index ke saath map me daal do
-        m[numbers[i]] = i;
-    }
-
-    return {};
-}
-
-int main(){
-    vector<int> numbers = {2, 7, 11, 15};
-    int target = 9;
-
-    vector<int> result = twoSumTwoHashMap(numbers, target);
-    cout << "HashMap Approach Indices: " << result[0] << ", " << result[1] << endl;
-
-    return 0;
-}
-```
-
-## 3. Complexity Analysis (Two-Pointer se bura kyun hai?)
-
-| **Criteria** | **HashMap Approach** | **Two-Pointer Approach (Optimal)** |
-| --- | --- | --- |
-| **Time Complexity** | **$O(N)$** (Loop ek baar chalta hai aur map lookup average me $O(1)$ hota hai) | **$O(N)$** (Dono pointers maximum $N$ steps chalte hain) |
-| **Space Complexity** | **$O(N)$** ❌ (Hume map me elements store karne ke liye extra space chahiye) | **$O(1)$** (Koi extra space nahi chahiye) |
-
-### Interviewer Tumhe Kyun Tokega?
-
-Agar tum Two Sum II (Sorted array) me HashMap lagao ge, toh interviewer bolega:
-
-1. **Constraint Violation:** LeetCode par Two Sum II me saaf likha hota hai: *"Your solution must use only constant extra space O(1)."* HashMap lagate hi space O(N) ho jati hai, jo constraint ke khilaf hai.
-2. **Sorted Property Waste:** Tumne array ke sorted hone ka koi fayda nahi uthaya. HashMap toh un-sorted array me bhi lag jata hai.
-
-### Short Summary:
-
-- **Unsorted Array** ho  **HashMap** lagao (O(N) Time, O(N) Space).
-- **Sorted Array** ho  **Two-Pointer** lagao (O(N) Time, O(1) Space).
-
-Bhai, dono algorithms ka farq samajh aya ki sorted me Two-Pointer hi raja kyun hai?
-
-Arre bhai, tumne ek dum sahi pakda hai! **Haan, bilkul isko HashMap se bhi kar sakte hain.** Aksar jo basic **Two Sum** (LeetCode #1) problem hoti hai, use hum **HashMap (`unordered_map` in C++)** se hi solve karte hain kyuki wahan array sorted nahi hota.
-
-Lekin, kyuki ye **Two Sum II** hai aur isme array **already sorted** hai, is wajah se HashMap use karna is question me sabse best tarika nahi maana jata. Chalo samajhte hain kyun, aur iska code kaise dikhega.
-
-## 1. HashMap Se Logic Kaise Banega?
-
-Hum array par ek loop chalayenge aur har element par khade hokar ek simple sawal puychenge: *"Mujhe target tak pahunchne ke liye kis number ki zaroorat hai?"*
-
-Us zaroorat wale number ko hum bolte hain **Complement**.
-
-$$\text{Complement} = \text{Target} - \text{Current Number}$$
-
-Hum map me check karenge ki kya ye complement pehle aa chuka hai?
-
-- **Agar haan:** Toh hume hamara pair mil gaya! Map se us complement ka index nikalenge aur current element ka index lekar return kar denge.
-- **Agar nahi:** Toh hum current number aur uske index ko map me daal denge (`map[number] = index`), taaki aage aane wale numbers iska use kar sakein.
-
-## 2. HashMap C++ Code
-
-C++ me HashMap ke liye hum `unordered_map` use karte hain:
-
-C++
-
-# 
-
-```
-#include <iostream>
-#include <vector>
-#include <unordered_map> // HashMap ke liye
-using namespace std;
-
-vector<int> twoSumTwoHashMap(vector<int>& numbers, int target){
-    // Key: Number, Value: Index
-    unordered_map<int, int> m;
-
-    for (int i = 0; i < numbers.size(); i++) {
-        int complement = target - numbers[i];
-
-        // Check karo ki kya complement map me pehle se hai
-        if (m.find(complement) != m.end()) {
-            // 1-based indexing chahiye, isliye +1 kiya
-            return {m[complement] + 1, i + 1};
-        }
-
-        // Agar nahi mila, toh current number ko uske index ke saath map me daal do
-        m[numbers[i]] = i;
-    }
-
-    return {};
-}
-
-int main(){
-    vector<int> numbers = {2, 7, 11, 15};
-    int target = 9;
-
-    vector<int> result = twoSumTwoHashMap(numbers, target);
-    cout << "HashMap Approach Indices: " << result[0] << ", " << result[1] << endl;
-
-    return 0;
-}
-```
-
-## 3. Complexity Analysis (Two-Pointer se bura kyun hai?)
-
-| **Criteria** | **HashMap Approach** | **Two-Pointer Approach (Optimal)** |
-| --- | --- | --- |
-| **Time Complexity** | **$O(N)$** (Loop ek baar chalta hai aur map lookup average me $O(1)$ hota hai) | **$O(N)$** (Dono pointers maximum $N$ steps chalte hain) |
-| **Space Complexity** | **$O(N)$** ❌ (Hume map me elements store karne ke liye extra space chahiye) | **$O(1)$** (Koi extra space nahi chahiye) |
-
-### Interviewer Tumhe Kyun Tokega?
-
-Agar tum Two Sum II (Sorted array) me HashMap lagao ge, toh interviewer bolega:
-
-1. **Constraint Violation:** LeetCode par Two Sum II me saaf likha hota hai: *"Your solution must use only constant extra space $O(1)$."* HashMap lagate hi space $O(N)$ ho jati hai, jo constraint ke khilaf hai.
-2. **Sorted Property Waste:** Tumne array ke sorted hone ka koi fayda nahi uthaya. HashMap toh un-sorted array me bhi lag jata hai.
-
-### Short Summary:
-
-- **Unsorted Array** ho $\rightarrow$ **HashMap** lagao ($O(N)$ Time, $O(N)$ Space).
-- **Sorted Array** ho $\rightarrow$ **Two-Pointer** lagao ($O(N)$ Time, $O(1)$ Space).
-
-
-Bhai, tumne Two Sum II ke dono code ek hi class me likh diye hain! Sabse pehle ek choti si C++ ki baat: class ke andar tum bilkul same naam aur same arguments ke do functions nahi rakh sakte (`compiler error: redefinition of 'twoSum'`). Interview me dono ko alag naam dena, jaise `twoSumBrute` aur `twoSumOptimal`.
-
-Chalo ab tumhare is code par un **chaaro edge cases** (Negative, Single Element, Zero, Duplicates) ka asar dekhte hain aur samajhte hain ki ye code kahin phasega ya nikal jayega.
-
----
-
-## 1. Negative Elements Ke Liye (Jaise `[-5, -3, -1, 2, 4]`)
-
-Yahan ek bohot acchi khabar hai! Pichle even-odd wale question me `%` operator ki wajah se negative numbers phas rahe the. Lekin is code me hum sirf **`+` (addition)** aur **compairson (`==`, `>`, `<`)** use kar rahe hain.
-
-* **Brute Force:** Do loop chalenge, `numbers[i] + numbers[j]` ka sum nikalega. C++ me negative numbers ka addition bilkul sahi hota hai (jaise `-5 + 2 = -3`). So, **PASS ✅**
-* **Optimal (Two-Pointer):** Agar array sorted hai aur usme negative numbers hain, tab bhi logic bilkul sahi chalega. Maan lo `target = -1` hai aur array `[-3, -1, 2, 4]` hai.
-* `i` par `-3`, `j` par `4`. `sum = 1`.
-* `sum > target` (`1 > -1`), toh `j--` ho jayega. Pointers ekdum sahi raaste par chalenge. So, **PASS ✅**
-
-
-
----
-
-## 2. Ek Hi Element Ke Liye (Jaise `numbers = {5}`)
-
-LeetCode ke description ke hisab se Two Sum II me array ka size kam se kam `2` hota hai, par agar interviewer fir bhi maze lene ke liye size `1` de de:
-
-* **Brute Force:** `n = 1` hoga. Pehla loop `i = 0` par chalega, par andar wala loop `j = 0 + 1 = 1` par aate hi condition `j < 1` false ho jayegi. Loop khatam aur tumhara function `{0, 0}` return kar dega. **(Safe Code ✅)**
-* **Optimal (Two-Pointer):** `i = 0` aur `j = 1 - 1 = 0`. Condition `while (i < j)` yaani `while (0 < 0)` turant false ho jayegi. Loop ke bahar aakar ye `{1, 1}` return kar dega. **(Safe Code ✅)**
-
----
-
-## 3. Array Me `0` (Zero) Present Ho (Jaise `[0, 2, 7, 11]`)
-
-Zero hone se addition par koi asar nahi padta.
-
-* **Brute Force aur Optimal:** `0 + 7 = 7` ho ya `0 + numbers[j]`, math bilkul perfect chalega.
-* Kyuki array sorted hai, toh `0` hamesha negative numbers ke baad aur positive numbers ke pehle apni sahi jagah par hoga, isliye pointers ka movement (bade se chota, chote se bada) ekdum sahi direction me hoga. **(PASS ✅)**
-
----
-
-## 4. Duplicate Elements Hon (Jaise `[2, 2, 3, 4, 4]`, Target = 4)
-
-Is case me tumhare code me **ek choti si chiz** dhyan dene wali hai:
-
-* **Brute Force:** `i = 0` (value 2) par hoga, aur `j = 1` (value 2) par hoga. `2 + 2 == 4` match ho jayega aur ye turant `{1, 2}` return kar dega. Ekdum sahi! **(PASS ✅)**
-* **Optimal (Two-Pointer):** `i` left se badhega aur `j` right se piche aayega. Maan lo array me duplicate elements hain aur unka sum target se bada hai, toh `j--` hoga chahe wahan duplicates hi kyun na hon. Pointers bina ruke aage badhte rahenge jab tak exact sum nahi mil jata. **(PASS ✅)**
-
----
-
-## Code Me Ek Chota Sa "Bug Fix" (Improvement)
-
-Tumhare dono functions logic-wise ekdum perfect hain aur saare cases handle kar lenge, par code me **ek logical/cleanliness issue** hai jise interview me sahi karna padega:
-
-1. **Brute Force ke end me `{0,0}` return ho raha hai aur Optimal ke end me `{1,1}`.** Standard practices ke mutabik agar answer na mile toh ya toh `{}` (empty vector) ya `{-1, -1}` return karna chahiye taaki error samajh aaye. (Waise question me dya hota hai ki exactly ek answer zaroor hoga).
-2. **Do functions ke naam same hain**, unhe alag karna hoga.
-
-### Ekdum Sahi Code:
-
-```cpp
-#include <bits/stdc++.h>
 using namespace std;
 
 class Solution {
 public:
-    // 1. Naam badal kar 'twoSumBrute' kiya
-    vector<int> twoSumBrute(vector<int>& numbers, int target) { // '&' use kiya fast performance ke liye
-        int n = numbers.size();  
-        for (int i = 0; i < n; i++) {
-            for (int j = i+1; j < n; j++) {
-                if (numbers[i] + numbers[j] == target) {
-                    return {i+1, j+1};
-                }
-            }
-        }
-        return {-1, -1}; // No pair found ke liye standard return
-    }
+    bool canSplitIntoEqualSumBrute(vector<int>& nums) {
+        int n = nums.size();
 
-    // 2. Naam badal kar 'twoSumOptimal' kiya
-    vector<int> twoSumOptimal(vector<int>& numbers, int target) {
-        int n = numbers.size();
-        int i = 0;
-        int j = n-1;
-        
-        while (i < j) {
-            int sum = numbers[i] + numbers[j];
-            if (sum == target) {
-                return {i+1, j+1};
-            } else if (sum > target) {
-                j--;
-            } else {
-                i++;
+        // Agar array me 2 se kam elements hain, toh 2 subarrays ban hi nahi sakte
+        if (n < 2) return false;
+
+        // Loop chalayenge split point decide karne ke liye
+        for (int i = 0; i < n - 1; i++) {
+            
+            // 1. Left Subarray ka sum nikalो (0 se i tak)
+            int leftSum = 0;
+            for (int j = 0; j <= i; j++) {
+                leftSum += nums[j];
+            }
+
+            // 2. Right Subarray ka sum nikalो (i+1 se n-1 tak)
+            int rightSum = 0;
+            for (int j = i + 1; j < n; j++) {
+                rightSum += nums[j];
+            }
+
+            // 3. Agar dono sum barabar hain, toh kaam ho gaya!
+            if (leftSum == rightSum) {
+                cout << "Equal sum mila index " << i << " par! Sum = " << leftSum << endl;
+                return true;
             }
         }
-        return {-1, -1}; // Consistent return format
+
+        return false; // Agar kahi bhi equal nahi mila
     }
 };
 
 int main() {
-    vector<int> numbers{-5, 0, 2, 7, 11, 15}; // Negative aur Zero dono daal diye
-
+    vector<int> nums = {1, 2, 3, 4, 5, 5};
+    
     Solution sol;
-    // Dono functions ko alag-alag call karke test kar sakte ho
-    vector<int> ans = sol.twoSumOptimal(numbers, 2); // -5 + 7 = 2
-
-    for (int x : ans) {
-        cout << x << ' ';
+    if (sol.canSplitIntoEqualSumBrute(nums)) {
+        cout << "Result: True (Array bat sakti hai)" << endl;
+    } else {
+        cout << "Result: False (Array nahi bat sakti)" << endl;
     }
-    cout << endl;
 
     return 0;
 }
 
 ```
 
-Bhai, is code me tumhare saare edge cases bilkul fail nahi honge, math operations aur pointers ka logic solid hai! Aur koi doubt isme?
+---
 
-# Pair With Given Difference
+## 4. Complexity Analysis (Yeh Kyun Bura Hai?)
 
-Bhai, ab aate hain **"Pair With Given Difference"** wale question par. Ye Two Sum jaisa hi dikhta hai, par isme choti si trick hoti hai jisme aksar log galti kar baithte hain.
+Interviewer ko brute force code dikhate hi tum bologe ki bhai ye bekar tarika hai. Kyun?
 
-Pehle question samajhte hain: Tumhe ek array diya jayega aur ek `difference` (yaani $K$) diya jayega. Tumhe array me koi bhi do aise numbers dhoodhne hain jinko aapas me minus (subtract) karne par answer exact $K$ aaye.
+### 1. Time Complexity: $O(N^2)$
 
-$$\text{numbers}[j] - \text{numbers}[i] = K$$
+* **Kyun?** Kyuki hamara ek outer loop chal raha hai $N$ baar (split point choose karne ke liye). Aur uske andar hum do inner loops chala rahe hain jo poore array ko traverse karke sum nikalte hain (wo bhi lagbhag $N$ operations lete hain).
+* Nested loops ki wajah se total time complexity quadratic ho jati hai, yaani **$O(N^2)$**. Agar array ka size $10^5$ hua, toh ye code fhat jayega (TLE de dega).
 
-Chalo pehle iska ekdum basic **Brute Force** tarika samajhte hain.
+### 2. Space Complexity: $O(1)$
+
+* **Kyun?** Kyuki humne koi naya array ya extra memory use nahi ki. Humne sirf do variables (`leftSum` aur `rightSum`) banaye hain jo constant space lete hain.
+
+
+Bhai, brute force ke $O(N^2)$ wale daldal se nikalne ke liye ab hum dekhenge **Better Approach** (jise hum prefix sum concept bhi bolte hain).
+
+Is approach se hamara kaam bina kisi nested loop ke, sirf do alag-alag linear loops me khatam ho jayega. Yaani Time Complexity sidhe $O(N^2)$ se gir kar **$O(N)$** ho jayegi!
 
 ---
 
-## 1. Brute Force Approach (Nested Loop)
+## 1. Better Logic: Dimaag Kaise Lagayein?
 
-Brute force ka wahi purana niyam hai: **"Saare possible pairs bana kar check karo."** Hum do loops chalayenge. Pehla loop ek number fix karega, aur doosra loop baaki ke saare numbers ko check karega ki kya unka difference $K$ ke barabar hai ya nahi.
+Brute force me sabse badi bekar cheez kya thi? Hum har index par khade hokar baar-baar left aur right ka sum shuruat se calculate kar rahe the, jo ki falthu ka repeat kaam tha.
 
-### Ek Zaruri Baat (Jo aksar log bhool jaate hain):
+**Iska ek smart hal hai:**
+Agar hume poore array ka **Total Sum** pehle se pata chal jaye, toh hume baar-baar right side ka loop chalane ki koi zaroorat nahi hai!
 
-Difference me order maayne rakh sakta hai. Agar hume do numbers $A$ aur $B$ mile, toh:
+Socho kaise:
 
-* $A - B = K$ bhi ho sakta hai.
-* $B - A = K$ bhi ho sakta hai.
-Isliye brute force me safe rehne ke liye hum dono ka **Absolute Difference (`abs(A - B)`)** check karte hain, yaani minus karne par sign (+ ya -) ko ignore karke sirf value dekhte hain.
+1. Sabse pehle poore array ka ek baar me total sum nikal lo, maan lo isko hum bolte hain `totalSum`.
+2. Ab ek variable banao `leftSum = 0`.
+3. Array par dubara shuru se chalna shuru karo. Har ek element `nums[i]` par pahunchte hi use `leftSum` me jodte jao.
+4. Ab dhyan se socho, agar us point par left side ka sum `leftSum` hai, toh right side ka sum bina loop chalaye kya hoga?
 
-### Ek Example Se Samjho:
+$$\text{rightSum} = \text{totalSum} - \text{leftSum}$$
 
-Maan lo array hai: `[5, 20, 3, 2, 50]` aur `difference (K) = 7`.
 
-* Hum `5` ko pakdenge, aur aage check karenge: `abs(5 - 20) = 15`, `abs(5 - 3) = 2`, `abs(5 - 2) = 3`... nahi mila.
-* Phir hum `20` ko pakdenge: `abs(20 - 3) = 17`, `abs(20 - 2) = 18`... nahi mila.
-* Phir hum `3` ko pakdenge: `abs(3 - 2) = 1`... nahi mila.
-* Phir jab hum aage check karenge, toh ek pair milega `20` aur `3` ka: `20 - 3 = 17` (Nahi), par agar hum `5` aur `2` ko dekhein: `5 - 2 = 3` (Nahi).
-* Wait, isme pair kaunsa hai? Agar hamara pair `5` aur `2` hai, toh $5 - 2 = 3$. Agar $K = 3$ hota toh ye mil jata. Hamare example ($K=7$) ke liye array me koi pair nahi hai.
-* Agar array hota `[9, 2, 11]` aur $K = 7$, toh jab hum `9` aur `2` ko check karte: `9 - 2 = 7` $\rightarrow$ **Mil gaya!**
+5. Bas har step par check kar lo ki kya `leftSum == rightSum` ho gaya? Agar haan, toh wahin se array ko tod do aur `true` return kar do!
 
 ---
 
-## 2. Brute Force C++ Code
+## 2. Better C++ Code
+
+Chalo iska code dekhte hain, ye padhne me bhi bohot saaf-suthra lagta hai:
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <cmath> // abs() function ke liye
+#include <numeric> // accumulate() function ke liye
 using namespace std;
 
-bool pairWithDifferenceBrute(vector<int>& arr, int K) {
-    int n = arr.size();
+class Solution {
+public:
+    bool canSplitIntoEqualSumBetter(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 2) return false;
 
-    // Pehla loop: Pehla element select karne ke liye
-    for (int i = 0; i < n; i++) {
-        // Doosra loop: Uske aage wale saare elements check karne ke liye
-        for (int j = i + 1; j < n; j++) {
-            
-            // Check karo ki kya dono ka absolute difference K hai
-            if (abs(arr[i] - arr[j]) == K) {
-                cout << "Pair mil gaya: " << arr[i] << " aur " << arr[j] << endl;
+        // Step 1: Poore array ka total sum nikal lo
+        // C++ me accumulate(start, end, initial_value) se total sum 1 line me nikal jata hai
+        long long totalSum = 0;
+        for (int x : nums) {
+            totalSum += x;
+        }
+
+        long long leftSum = 0;
+
+        // Step 2: Array par traverse karo aur check karo
+        // n-1 tak chalayenge kyuki right side me kam se kam ek element hona chahiye
+        for (int i = 0; i < n - 1; i++) {
+            leftSum += nums[i]; // Current element ko left sum me add kiya
+
+            long long rightSum = totalSum - leftSum; // Right sum bina loop ke mil gaya
+
+            // Agar dono barabar hain, toh split possible hai
+            if (leftSum == rightSum) {
+                cout << "Equal sum mila index " << i << " par! Sum = " << leftSum << endl;
                 return true;
             }
         }
-    }
 
-    cout << "Aisa koi pair nahi mila!" << endl;
-    return false;
-}
+        return false;
+    }
+};
 
 int main() {
-    vector<int> arr = {5, 20, 3, 2, 50};
-    int K = 17; // Kyuki 20 - 3 = 17 hota hai
+    vector<int> nums = {1, 2, 3, 4, 5, 5};
+    
+    Solution sol;
+    if (sol.canSplitIntoEqualSumBetter(nums)) {
+        cout << "Result: True" << endl;
+    } else {
+        cout << "Result: False" << endl;
+    }
 
-    pairWithDifferenceBrute(arr, K);
+    return 0;
+}
 
+```
+
+---
+
+## 3. Complexity Analysis
+
+Bhai, ye approach performance ke maamle me ekdum top-class hai:
+
+### 1. Time Complexity: $O(N)$
+
+* **Kyun?** Kyuki humne koi nested loops (loop ke andar loop) nahi lagaya.
+* Pehle humne ek loop chalaya total sum nikalne ke liye ($N$ steps).
+* Phir humne dusra loop chalaya split point dhoodhne ke liye ($N$ steps).
+* Total steps hue $N + N = 2N$. Big-O notation me constant ko ignore karte hain, toh time complexity bani linear, yaani **$O(N)$**. (Brute force ke $O(N^2)$ se karodo guna fast!).
+
+### 2. Space Complexity: $O(1)$
+
+* **Kyun?** Kyuki humne koi naya array, prefix-sum vector ya extra memory store nahi ki. Humne sirf do variables (`totalSum` aur `leftSum`) ka use kiya, jo constant memory lete hain.
+
+---
+
+## Edge Cases Par Yeh Code Kaise Chalega?
+
+* **Negative Elements:** Bilkul sahi chalega! Agar elements negative hain (jaise `[-2, 2, -3, 3]`), toh total sum `0` aayega. Jab `leftSum` bhi `0` aur `rightSum` bhi `0` hoga, ye `true` de dega.
+* **Zero Present Ho:** `0` se addition/subtraction par koi farq nahi padta, perfect chalega.
+* **Duplicates:** Pura logic maths par chal raha hai (Total - Left), toh duplicates se variables ki indexing par koi asar nahi padta.
+
+Bhai, ye $O(N)$ wali better approach ekdum dimaag me dhas gayi? Iska ek aur **Optimal Two-Pointer approach** bhi hota hai (bina total sum pehle nikale, dono taraf se ek saath sum calculate karte hue aana), wo dekhna hai ya ye wali samajh aa gayi poori?
+
+Bhai, ab aate hain is question ke **Optimal Tarike (Two-Pointer Approach)** par.
+
+Pichli "Better Approach" me hume pure array ka total sum pehle se nikalna pad raha hai (yaani do baar array par loop chalana padta hai). Lekin **Optimal Approach** me hum bina total sum nikale, **sirf ek single pass (ek hi loop)** me dono taraf se sum calculate karte hue aate hain. Isme bhi Time Complexity **$O(N)$** aur Space **$O(1)$** hi rehti hai, par ye code chalta aur bhi zyada fast hai.
+
+---
+
+## 1. Optimal Logic: Kaise Kaam Karta Hai?
+
+Maan lo hamare paas ek array hai: `[1, 2, 3, 4, 5, 5]`.
+
+Hum do pointers lenge aur do variables me unka sum track karenge:
+
+* `left = 0` (Shuruat me), iska sum hoga `leftSum = arr[left]`
+* `right = n-1` (Aakhiri me), iska sum hoga `rightSum = arr[right]`
+
+Hum dono pointers ko ek-dusre ki taraf badhayenge jab tak wo mil nahi jaate (`left < right-1`).
+
+### Har Step Par Decision Kaise Lenge?
+
+* **Case 1: Agar `leftSum < rightSum` hai**
+Matlab left side choti pad rahi hai. Hum `left` pointer ka ek kadam aage badhayenge (`left++`) aur naye element ko `leftSum` me jod denge.
+* **Case 2: Agar `leftSum >= rightSum` hai** (ya right chota hai)
+Matlab right side choti pad rahi hai (ya barabar hai). Hum `right` pointer ko ek kadam piche khisakayenge (`right--`) aur naye element ko `rightSum` me jod denge.
+
+### Loop Khatam Hone Par:
+
+Jab dono pointers ke beech me koi element nahi bachega (yaani deewar ekdum sahi jagah ban chuki hai), tab hum check karenge ki kya aakhiri me `leftSum == rightSum` hai? Agar haan, toh `true`, nahi toh `false`!
+
+---
+
+## 2. Optimal C++ Code
+
+Chalo ab iska ekdum makkhan jaisa code dekhte hain:
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Solution {
+public:
+    bool canSplitIntoEqualSumOptimal(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 2) return false;
+
+        int left = 0;
+        int right = n - 1;
+
+        long long leftSum = nums[left];
+        long long rightSum = nums[right];
+
+        // left < right - 1 isliye kyuki beech me split karne ke liye dono ke beech jagah honi chahiye
+        while (left < right - 1) {
+            if (leftSum < rightSum) {
+                left++;
+                leftSum += nums[left];
+            } else {
+                right--;
+                rightSum += nums[right];
+            }
+        }
+
+        // Aakhiri me check karo dono side barabar hui ya nahi
+        return (leftSum == rightSum);
+    }
+};
+
+int main() {
+    vector<int> nums = {1, 2, 3, 4, 5, 5};
+    
+    Solution sol;
+    if (sol.canSplitIntoEqualSumOptimal(nums)) {
+        cout << "Result: True (Array completely balanced hai!)" << endl;
+    } else {
+        cout << "Result: False" << endl;
+    }
+
+    return 0;
+}
+
+```
+
+---
+
+## 3. Complexity Analysis
+
+### 1. Time Complexity: $O(N)$
+
+* **Reason:** Isme hum array ke upar **sirf ek baar** loop chala rahe hain. `left` pointer aage badh raha hai aur `right` piche aa raha hai. Dono milkar total $N$ elements ko touch karenge. Isliye Time Complexity linear hai, yaani **$O(N)$**.
+* Yeh pichli approach (Better) se isliye fast hai kyuki wahan pure array ko 2 baar scan karna pad raha tha ($2N$ operations), yahan sirf 1 baar scan me kaam khatam ($N$ operations).
+
+### 2. Space Complexity: $O(1)$
+
+* **Reason:** Humne koi extra vectors ya tables use nahi kiye, sirf pointers aur do variables use kiye hain jo constant memory lete hain.
+
+---
+
+## Final Maha-Summary (Interview me bolne ke liye)
+
+| Approach | Time Complexity | Space Complexity | Code Me Kitne Loops? |
+| --- | --- | --- | --- |
+| **Brute Force** | $O(N^2)$ ❌ | $O(1)$ | 2 Nested Loops (Har index par baar-baar sum nikalna) |
+| **Better Approach** | $O(N)$ | $O(1)$ | 2 Alag-Alag Loops (Pehle Total Sum, fir check) |
+| **Optimal Approach** | $O(N)$ 🔥 | $O(1)$ | **Sirf 1 Loop** (Dono taraf se ghiste hue aana) |
+
+Bhai, ab is question ka Brute, Better, aur Optimal teeno logic dimaag me chhap gaya?
+
+
+Bhai, agar hum mathematically aur efficiency ke maamle me dekhein, toh **$O(N)$ Time aur $O(1)$ Space se zyada optimize karna impossible hai**, kyunki array ke har element ko kam se kam ek baar bina dekhe tum ye nahi bata sakte ki sum barabar hoga ya nahi.
+
+Lekin, tumne jo code abhi dekha, usme **ek bohot bada hidden trap (bug)** hai jo aksar log miss kar jaate hain aur interview me fail ho jaate hain. Woh trap hai: **Negative Numbers!**
+
+Jo Two-Pointer approach humne abhi dekhi, wo sirf tabhi sahi chalegi jab array me **saare numbers positive** hon. Agar array me negative numbers aa gaye (jaise `[-1, 4, -2, 3]`), toh pointer ka left/right decision logic (`leftSum < rightSum`) bilkul fail ho jayega.
+
+Toh is question ko **har ek case ke liye ultimate-level par optimize aur full-proof** karne ke liye, hum **Prefix Sum** (jo hamari Better Approach thi) ko hi thoda aur clean aur fast bana dete hain. Code logic ke maamle me wahi sabse zyada full-proof aur optimal hai.
+
+Chalo mai tumhe dikhata hoon ki coding platforms par bina kisi glitch ke 100% test cases paas karne wala **sabse clean aur bullet-proof code** kaise likhte hain.
+
+---
+
+## The Ultimate & Safest Optimal Code (For All Numbers: Positive, Negative, Zero)
+
+Hum wahi logic use karenge: **Total Sum - Left Sum = Right Sum**. Lekin isko hum C++ ke inbuilt functions aur thoda smart conditional checks ke saath likhenge taaki ye micro-second me execute ho jaye.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <numeric> // accumulate ke liye
+using namespace std;
+
+class Solution {
+public:
+    bool canSplitIntoEqualSumUltimate(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 2) return false;
+
+        // 1. Poore array ka total sum nikal lo (Highly Optimized Inbuilt Function)
+        // long long isliye use kiya taaki integer overflow na ho (agar numbers bohot bade hon)
+        long long totalSum = accumulate(nums.begin(), nums.end(), 0LL);
+
+        // Trick: Agar total sum odd hai, toh use do barabar integer hisson me todna impossible hai!
+        // Jaise agar total 15 hai, toh 7.5 aur 7.5 me split nahi ho sakta kyuki array me sirf integers hain.
+        // NOTE: Ye trick tabhi kaam karegii jab array me sirf POSITIVE numbers hon. 
+        // Agar negative numbers hain toh total sum odd hone par bhi split ho sakta hai (e.g., [3, -2, 2, -1] total 2, left 1, right 1)
+        // Isliye hum safety ke liye is check ko skip karte hain taaki negative numbers bhi chal sakein.
+
+        long long leftSum = 0;
+
+        // 2. Sirf ek simple single pass loop
+        for (int i = 0; i < n - 1; i++) {
+            leftSum += nums[i];
+            
+            // Agar leftSum exact half hai totalSum ka, toh automatically rightSum bhi half hi hoga!
+            // Mathematically: leftSum == totalSum - leftSum  =>  2 * leftSum == totalSum
+            if (2 * leftSum == totalSum) {
+                cout << "Array balanced hui index " << i << " par! Target Sum = " << leftSum << endl;
+                return true;
+            }
+        }
+
+        return false;
+    }
+};
+
+int main() {
+    // Test case jisme negative, zero, sab hain!
+    vector<int> nums = {-1, 4, 2, 0, 3, 2}; // Total sum = 10, left [-1, 4, 2, 0] = 5, right [3, 2] = 5
+    
+    Solution sol;
+    if (sol.canSplitIntoEqualSumUltimate(nums)) {
+        cout << "Result: True" << endl;
+    } else {
+        cout << "Result: False" << endl;
+    }
+
+    return 0;
+}
+
+```
+
+---
+
+## Yeh Pehle Wale Codes Se Behtar aur Kyun Hai?
+
+1. **Handling of Negative/Zero Elements:** Jo `left < right` wala two-pointer code tha, wo negative numbers aate hi dimaag ghum jata tha uska. Yeh wala code purely total math equation ($2 \times \text{leftSum} == \text{totalSum}$) par chalta hai, isse koi farq nahi padta ki number positive hai, negative hai, ya zero hai.
+2. **Integer Overflow Se Suraksha:** Humne `long long` aur `0LL` use kiya hai. Agar array me bade-bade numbers diye hon (jaise $10^9$), toh normal `int` bhatak jata hai aur garbage value de deta hai (overflow). Yeh code usse bhi safe hai.
+3. **Micro-Level Optimization:** Humne `totalSum - leftSum` calculate karne ki jagah seedha `2 * leftSum == totalSum` check kiya hai. Multiplication (`* 2` yaani bitwise shift compiler ke level par) subtraction se fast hoti hai CPU ke liye.
+
+Bhai, isse zyada safe, tight aur short code is question ka pure internet par nahi milega! Ekdum clear hua ki interview me negative numbers pooche toh hume Two-Pointer chhod kar is Prefix/Total Sum wali approach ko kyun chunn-na chahiye?
+
+
+Bhai, tumne ekdum sahi pakda hai! Interviewer aksar hume isi cheez par test karta hai ki hamara code kitna robust (majboot) hai.
+
+Chalo, is question (**Divide Array in Two Subarrays with Equal Sum**) ke teeno approaches (**Brute Force**, **Two-Pointer**, aur **Prefix/Total Sum**) ko ek-ek karke unhi **chaaro edge cases** (Negative, Single, Zero, Duplicates) ki kasoti par parakhte hain aur dekhte hain kaun kahan fategi aur kaise modify hogi.
+
+---
+
+## 1. Brute Force Approach (Nested Loops)
+
+Hamara brute force code har index par split karke left aur right ka sum shuru se calculate karta tha.
+
+```cpp
+// Code reference jo dimaag me rakhna hai:
+for (int i = 0; i < n - 1; i++) {
+    int leftSum = 0; for (int j = 0; j <= i; j++) leftSum += nums[j];
+    int rightSum = 0; for (int j = i + 1; j < n; j++) rightSum += nums[j];
+    if (leftSum == rightSum) return true;
+}
+
+```
+
+* **Case 1: Negative Elements (`[-2, 2, -3, 3]`)** $\rightarrow$ **PASS ✅**
+* **Kyun?** Kyuki ye code simple jodd (addition) kar raha hai. Loops har element ko physically utha kar add karte hain. C++ me negative addition bilkul sahi hota hai. `leftSum` aur `rightSum` dono `-3` ya `0` kuch bhi ho sakte hain aur compairson (`==`) perfectly kaam karega.
+
+
+* **Case 2: Ek Hi Element (`[5]`)** $\rightarrow$ **PASS ✅**
+* **Kyun?** Hamare code me shuruat me hi ek safety check hota hai: `if (n < 2) return false;`. Kyuki ek element ko do subarrays me todna impossible hai, isliye ye turant safe exit kar jayega.
+
+
+* **Case 3: Array Me `0` Present Ho (`[1, 0, 1]`)** $\rightarrow$ **PASS ✅**
+* **Kyun?** `0` ko kisi bhi sum me jodne se uski value par koi asar nahi padta. Agar hum index `0` par split karein, toh `leftSum = 1`, `rightSum = 0 + 1 = 1`. Dono barabar mil jayenge.
+
+
+* **Case 4: Duplicate Elements (`[2, 2, 2, 2]`)** $\rightarrow$ **PASS ✅**
+* **Kyun?** Duplicates se array ke sum karne ke tarike par koi asar nahi padta. Index `1` par split karne se `leftSum = 4` aur `rightSum = 4` ho jayega.
+
+
+
+> **Conclusion for Brute Force:** Brute force slow zaroor hai ($O(N^2)$), par ye ekdum seedha-saadha baccha hai. Isme koi trick nahi hai, isliye ye **saare cases bina kisi modification ke handle kar leta hai.**
+
+---
+
+## 2. Two-Pointer Approach (Shrinking from Both Ends)
+
+Yeh approach left aur right se pointers ko sum ke mutabik khisakati thi: `if (leftSum < rightSum) left++; else right--;`
+
+* **Case 1: Negative Elements (`[-1, 4, -2, 3]`)** $\rightarrow$ **🚨 FATAL FAILURE / FAIL!**
+* **Kyun?** Iska pointer movement ka decision galat ho jata hai. Maan lo `leftSum = -1` hai aur `rightSum = 3` hai. Condition check hogi: `if (leftSum < rightSum)` yani `-1 < 3` (True). Code sochega ki left side choti hai, toh `left++` karo.
+* Lekin ho sakta hai ki `left++` karne par jo agla number mile wo ek bada negative number ho (jaise `-5`), jisse `leftSum` aur chota (`-6`) ho jaye! Iska matlab, **negative numbers hone par hum sum dekh kar pointer badhane ka sahi decision nahi le sakte.**
+* **Modification:** Two-pointer approach ko negative numbers ke liye modify karna bohot zyada complex ho jata hai (hume alag se state maintain karni padegi), isliye interview me saaf bolna hai ki *Negative numbers ke liye Two-pointer use nahi kar sakte.*
+
+
+* **Case 2: Ek Hi Element (`[5]`)** $\rightarrow$ **PASS ✅**
+* `if (n < 2) return false;` lagane se ye safe rahega.
+
+
+* **Case 3: Array Me `0` Present Ho (`[2, 0, 2]`)** $\rightarrow$ **🚨 FAIL/TRAP!**
+* Maan lo array hai `[2, 0, 2]`. Shuru me `leftSum = 2`, `rightSum = 2`.
+* Condition check: `if (leftSum < rightSum)` $\rightarrow$ `2 < 2` (False). Toh ye `else` me jayega aur `right--` kar dega.
+* `right` pointer beech wale `0` par aa jayega, `rightSum = 2 + 0 = 2`. Loop khatam. Aakhiri me check hoga `leftSum == rightSum` (`2 == 2`) $\rightarrow$ **True** de dega. Yahan toh bach gaya!
+* Lekin agar array `[0, 2, 2]` ho, toh ye phans sakta hai decision tree me. `0` hone par pointers khisakte hain par sum nahi badhta, jisse edge cases me glitch aa sakta hai.
+
+
+* **Case 4: Duplicate Elements (`[2, 2, 2, 2]`)** $\rightarrow$ **PASS ✅**
+* Positive duplicates me koi dikkat nahi aayegi, pointers dhire-dhire barabar ho jayenge.
+
+
+
+---
+
+## 3. Prefix / Total Sum Approach (The Ultimate Solution)
+
+Yeh hamari sabse solid approach hai jo total sum nikal kar check karti hai: `if (2 * leftSum == totalSum)`
+
+```cpp
+// Code reference jo dimaag me rakhna hai:
+long long totalSum = accumulate(nums.begin(), nums.end(), 0LL);
+long long leftSum = 0;
+for (int i = 0; i < n - 1; i++) {
+    leftSum += nums[i];
+    if (2 * leftSum == totalSum) return true;
+}
+return false;
+
+```
+
+* **Case 1: Negative Elements (`[-1, 4, 2, 0, 3, 2]`)** $\rightarrow$ **PASS 🔥**
+* **Kyun?** Is code ko is baat se koi matlab hi nahi hai ki pointer kahan khisakana hai. Yeh bas simple math laga raha hai: Agar mere paas aadhi chocolate (`leftSum`) hai, toh bachi hui chocolate bhi aadhi (`totalSum - leftSum`) hi hogi. Chahe numbers negative hon ya positive, mathematics ($2 \times \text{leftSum} == \text{totalSum}$) hamesha sach rahegi.
+
+
+* **Case 2: Ek Hi Element (`[5]`)** $\rightarrow$ **PASS ✅**
+* Base condition `if (n < 2) return false;` isko handle kar legi.
+
+
+* **Case 3: Array Me `0` Present Ho (`[3, 0, -3, 0]`)** $\rightarrow$ **PASS 🔥**
+* Chahe kitne bhi zeros hon, total sum aur left sum perfectly balance rahenge. `0` jodne par condition tute nahigi.
+
+
+* **Case 4: Duplicate Elements (`[5, 5, 5, 5]`)** $\rightarrow$ **PASS ✅**
+* Total sum `20` hoga. Jaise hi `leftSum` do baar `5` jod kar `10` banega, `2 * 10 == 20` true ho jayega. Duplicates iska kuch nahi bighad sakte.
+
+
+
+---
+
+## 💡 Interview Summary (Jo tumhe interviewer ko bolna hai)
+
+Agar interviewer tumse kahe ki saare edge cases ko dhyan me rakh kar best code likho, toh tum ye final conclusion dena:
+
+> "Sir, agar array me **sirf positive numbers** hain, toh **Two-Pointer Approach** best hai kyuki wo single pass me bina total sum nikale kaam kar deti hai.
+> Lekin agar array me **Negative elements ya Zeros** bhi aa sakte hain, toh Two-Pointer ka pointer-movement decision fail ho jata hai. Us case me, **Total Sum / Prefix Sum approach hi sabse zyada optimal aur full-proof hai**, kyuki wo pure mathematical equation ($2 \times \text{leftSum} == \text{totalSum}$) par chalti hai jo har tarah ke numbers (Positive, Negative, Zero, Duplicates) ke liye 100% sahi kaam karti hai."
+
+Bhai, teeno approaches ka edge cases ke saath pura breakdown samajh agaya ekdum acche se?
+
+
+# Largest Sum Contiguous Subarray
+
+
+Bhai, ye question DSA ka ekdum absolute legend hai! Isko leetcode par **"Maximum Subarray"** aur aam bhasha me **"Kadane's Algorithm"** ka base question bola jata hai.
+
+Chalo, pehle samajhte hain question kya keh raha hai: Tumhe ek array diya jayega (jisme positive aur negative dono numbers ho sakte hain). Tumhe ek aisa **Contiguous Subarray** (yaani lagatar aane wale elements ka tukda) dhoodhna hai jiska **Sum sabse bada (maximum)** ho.
+
+Ab samajhte hain iska ekdum basic **Brute Force Approach**.
+
+---
+
+## Brute Force Approach: Saare Tukde Check Karo ($O(N^3)$)
+
+Brute force ka wahi simple rule hai: **"Duniya ke saare possible subarrays banao, sabka sum nikalon, aur jo sabse bada mile use answer maan lo."**
+
+Ek subarray ko shuru karne ke liye ek `i` (start point) chahiye aur khatam karne ke liye ek `j` (end point) chahiye. Aur unke beech ke elements ko jodne ke liye ek teesra loop chahiye.
+
+### Kaise Kaam Karega? (Logic):
+
+1. **Pehle loop (`i`):** Yeh tay karega ki hamara subarray kahan se **shuru** ho raha hai ($0$ se $N-1$ tak).
+2. **Doosra loop (`j`):** Yeh tay karega ki hamara subarray kahan par **khatam** ho raha hai ($i$ se $N-1$ tak).
+3. **Teesra loop (`k`):** Yeh `i` se lekar `j` tak ke saare elements ko aapas me **jodega (sum nikalega)**.
+4. Har baar sum nikalne ke baad hum check karenge ki kya ye sum hamare ab tak ke `maxSum` se bada hai? Agar haan, toh `maxSum` ko update kar denge.
+
+---
+
+## C++ Code (Absolute Brute Force - $O(N^3)$)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <climits> // INT_MIN ke liye
+#include <algorithm> // max() ke liye
+using namespace std;
+
+class Solution {
+public:
+    int maxSubArrayBrute(vector<int>& nums) {
+        int n = nums.size();
+        int maxSum = INT_MIN; // Shuru me sabse choti possible value rakh li
+
+        // 1. Loop 1: Subarray ka Starting Point (i)
+        for (int i = 0; i < n; i++) {
+            
+            // 2. Loop 2: Subarray ka Ending Point (j)
+            for (int j = i; j < n; j++) {
+                
+                int currentSum = 0;
+                
+                // 3. Loop 3: 'i' se lekar 'j' tak ke elements ka sum nikalna
+                for (int k = i; k <= j; k++) {
+                    currentSum += nums[k];
+                }
+                
+                // Kya ye sum purane maxSum se bada hai?
+                maxSum = max(maxSum, currentSum);
+            }
+        }
+        return maxSum;
+    }
+};
+
+int main() {
+    vector<int> nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
+    
+    Solution sol;
+    cout << "Brute Force Max Sum: " << sol.maxSubArrayBrute(nums) << endl; 
+    // Iska answer 6 aayega -> Subarray: [4, -1, 2, 1]
+    
+    return 0;
+}
+
+```
+
+---
+
+## Complexity Analysis (Yeh Ghatiya Kyun Hai?)
+
+### 1. Time Complexity: $O(N^3)$
+
+* **Kyun?** Kyuki humne loop ke andar loop, aur uske andar ek aur loop lagaya hai (3 Nested Loops).
+* Agar array ka size $N = 1000$ hua, toh $1000 \times 1000 \times 1000 = 10^9$ operations ho jayenge, jo standard 1-second ki limit ke bahar hai. Yeh code platforms par pakka **TLE (Time Limit Exceeded)** dega.
+
+### 2. Space Complexity: $O(1)$
+
+* **Kyun?** Kyuki humne koi naya array ya extra space use nahi ki hai, bas teen loop variables aur sum track karne ke liye variables banaye hain.
+
+---
+
+## Kya Is Brute Force Ko Thoda Aur Sudhar Sakte Hain? ($O(N^2)$ Kaise Karein?)
+
+Dhyan se dekho, jab hum `i` se `j` tak ka sum nikal chuke hain, toh agle element `j+1` ka sum nikalne ke liye `k` wala loop shuru se chalane ki kya zaroorat hai? Hum purane sum me hi bas naya element `nums[j]` jod sakte hain!
+
+Isse teesra loop (`k`) gayab ho jayega aur time complexity **$O(N^2)$** ho jayegi.
+
+### $O(N^2)$ Code Snippet:
+
+```cpp
+// Thoda behtar brute force: O(N^2)
+for (int i = 0; i < n; i++) {
+    int currentSum = 0;
+    for (int j = i; j < n; j++) {
+        currentSum += nums[j]; // Baar-baar naya loop nahi chalaya, purane me hi add kiya
+        maxSum = max(maxSum, currentSum);
+    }
+}
+
+```
+
+Bhai, $O(N^3)$ aur $O(N^2)$ dono brute force samajh aaye? Iska jo **Optimal Approach** hai (Kadane's Algorithm) jo ise sirf **$O(N)$** me khatam kar deta hai, wo dekhna hai ab?
+
+
+Bhai, ab aate hain iski **Better Approach** par.
+
+Pichle $O(N^3)$ wale code me sabse badi bekar cheez kya thi? Hum har baar `i` se lekar `j` tak ke elements ko phir se shuruat se jod rahe the (`k` wale loop se). Wo ekdum falthu ka repeat kaam tha.
+
+**Better approach ka simple logic ye hai:**
+Agar hume pata hai ki `[4, -1]` ka sum `3` hai, toh agle element `2` ko shuruat se jodne ki kya zaroorat hai? Hum seedha `3 + 2 = 5` kar sakte hain! Yani hum teesre loop (`k`) ko bilkul khatam kar denge aur purane sum me hi naya element jodte chalenge.
+
+Isse hamari Time Complexity $O(N^3)$ se seedha gir kar **$O(N^2)$** ho jayegi.
+
+---
+
+## 1. Better Logic (Nested Loops without Re-calculation)
+
+1. Hum ek outer loop chalayenge `i` jo hamare subarray ka **Starting Point** hoga.
+2. Har `i` ke shuru hote hi hum ek `currentSum = 0` set kar denge.
+3. Ab ek inner loop chalayenge `j` jo `i` se shuru hokar aakhiri tak jayega (hamara **Ending Point**).
+4. Har step par hum bas `currentSum += nums[j]` karenge. Isse hame bina naye loop ke har ek subarray ka sum live milta rahega.
+5. Aur sath hi sath hum use `maxSum` se compare karke update karte rahenge.
+
+---
+
+## 2. Better C++ Code ($O(N^2)$)
+
+Chalo iska saaf-suthra code dekhte hain:
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    int maxSubArrayBetter(vector<int>& nums) {
+        int n = nums.size();
+        int maxSum = INT_MIN; // Shuru me sabse choti value
+
+        // Loop 1: Subarray ka starting point fix karo
+        for (int i = 0; i < n; i++) {
+            int currentSum = 0; // Naye starting point ke liye sum 0 kiya
+
+            // Loop 2: Subarray ka ending point badhate jao
+            for (int j = i; j < n; j++) {
+                currentSum += nums[j]; // Purane sum me hi naya element jodd diya!
+                
+                // Max Sum ko update karo
+                maxSum = max(maxSum, currentSum);
+            }
+        }
+        return maxSum;
+    }
+};
+
+int main() {
+    vector<int> nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
+    
+    Solution sol;
+    cout << "Better Approach Max Sum: " << sol.maxSubArrayBetter(nums) << endl; 
+    // Output: 6
+    
     return 0;
 }
 
@@ -1130,412 +727,742 @@ int main() {
 ## 3. Complexity Analysis
 
 * **Time Complexity: $O(N^2)$**
-* **Kyun?** Kyuki humne do nested loops chalaye hain. Agar array me $N$ elements hain, toh worst-case me hame har ek element ko baaki sabhi se compare karna padega. Badi arrays ke liye ye bohot slow ho jayega aur TLE (Time Limit Exceeded) de dega.
+* **Kyun?** Kyuki humne do nested loops chalaye hain. Outer loop $N$ baar chalta hai aur inner loop average me $N/2$ baar. Total operations lagbhag $N^2/2$ hote hain, jise hum Big-O me **$O(N^2)$** likhte hain.
+* Yeh $O(N^3)$ se toh bohot behtar hai, par agar array ka size $10^5$ de diya, toh ye bhi **TLE** de dega kyuki $10^{10}$ operations ho jayenge.
 
 
 * **Space Complexity: $O(1)$**
-* **Kyun?** Kyuki humne koi extra array, vector ya map use nahi kiya hai. Sirf variables use kiye hain jo constant memory lete hain.
+* **Kyun?** Kyuki humne koi extra array ya vector use nahi kiya. Sirf do-teen variables banaye hain jo constant memory lete hain.
 
 
-
-Bhai, brute force clear hua? Isko ab optimize karne ke do mast tarike hain (ek Sorting + Two-Pointer se aur ek HashMap se). Kaunsa wala pehle dekhna hai?
-
-
-Bhai, "Pair With Given Difference" ko optimize karne ke **do kamaal ke tarike** hain. Interviewer hamesha dono tarike sunna chahta hai, kyuki ek me Sorting lagti hai aur dusre me HashMap.
-
-Chalo dono ko ek-ek karke ekdum detail me samajhte hain.
 
 ---
 
-## Approach 1: Sorting + Two-Pointer (The Smart Way)
+## Edge Cases Par Yeh Kaise Chalega?
 
-Agar hum array ko **Sort (increasing order)** kar dein, toh hum do pointers ka use karke sirf ek chakkar ($O(N)$) me answer nikal sakte hain.
+* **Saare Numbers Negative Hon (`[-3, -1, -5, -2]`)**: Yeh code perfectly chalega. `maxSum` shuru me `INT_MIN` hai, toh sabse pehle `-3` milega, fir `-1` milega jo `-3` se bada hai, toh `maxSum` update hokar `-1` ho jayega. Output ekdum sahi `-1` aayega.
+* **Single Element (`[4]`)**: Outer loop 1 baar, inner loop 1 baar chalega. `maxSum = 4` ho jayega. Perfect!
 
-Maan lo hamara sorted array hai: `[2, 3, 5, 20, 50]` aur `K = 17`.
+Bhai, ye $O(N^2)$ wala logic dimaag me fit hua? Ab iska asli hero, yaani **Kadane's Algorithm (Optimal Approach)** dekhein jo bina do loop chalaye sirf ek single pass ($O(N)$) me isko dhasu tarike se solve kar deta hai?
 
-Hum do pointers lenge, par Two Sum ki tarah ek shuruat aur ek aakhiri me nahi rakhenge. Isme dono pointers **shuruat se hi aage badhenge**:
 
-* `i = 0` (Chote element par)
-* `j = 1` (Uske agle element par)
+Bhai, ab aate hain is question ke asli baap par—jise pure DSA me **Kadane's Algorithm** ke naam se jana jata hai.
 
-Hum har baar check karenge: `diff = arr[j] - arr[i]`
+Yeh approach itni shaandar hai ki bina kisi nested loop ke, **sirf ek single loop (Single Pass)** me poora game khatam kar deti hai. Iski Time Complexity seedha $O(N^2)$ se gir kar **$O(N)$** ho jaati hai aur Space **$O(1)$** rehta hai.
 
-* **Case 1: `diff == K**` $\rightarrow$ Pair mil gaya! Return `true`.
-* **Case 2: `diff < K**` $\rightarrow$ Hamara difference abhi chota hai, hume difference ko **bada** karna hai. Kyuki array sorted hai, agar hum `j` ko aage badhayenge (`j++`), toh `arr[j]` bada ho jayega aur hamara difference bhi badh jayega.
-* **Case 3: `diff > K**` $\rightarrow$ Hamara difference bada ho gaya hai, hume isko **chota** karna hai. Isliye hum `i` ko aage badhayenge (`i++`), taaki minus hone wala number bada ho jaye aur overall difference kam ho jaye.
+---
 
-> **Edge Case:** Agar aage badhte-badhte `i` aur `j` dono ek hi index par aa jayein (`i == j`), toh difference hamesha `0` ho jayega. Us case me hum bas `j++` kar dete hain kyuki do alag-alag elements chahiye.
+## 1. Kadane's Algorithm Ka Logic (The Golden Rule)
 
-### C++ Code (Sorting + Two-Pointer)
+Kadane's algorithm ek simple par bohot gahre dimaag par chalta hai: **"Agar piche se aane wala sum negative hai, toh use aage carry mat karo. Use wahin chhod do aur naye element se nayi shuruat karo!"**
+
+Socho kyun? Agar tumhare paas pehle se `-5` ka nuksaan (negative sum) hai, aur aage tumhe ek accha number `4` milne wala hai, toh kya tum `-5 + 4 = -1` karna chahoge? Nahi na! Tum bologe, *"Bhai, purana nuksaan chhod, mai `4` se apni nayi dukaan shuru karunga."*
+
+### Steps Kaise Kaam Karte Hain?
+
+1. Hum do variables lenge:
+* `maxSum` = `INT_MIN` (Jo hamara final absolute maximum sum store karega).
+* `currentSum` = `0` (Jo live subarray ka sum track karega).
+
+
+2. Array par ek-ek karke aage badhenge:
+* Har element ko `currentSum` me jodd do (`currentSum += nums[i]`).
+* Agar `currentSum` hamare `maxSum` se bada ho gaya, toh `maxSum` ko update kar do.
+* **The Master Step:** Agar kisi bhi point par `currentSum < 0` (negative) ho jata hai, toh use turant wapas **`0`** kar do! (Kyunki negative sum aage jaakar agle elements ka sum kam hi karega, fayda nahi dega).
+
+
+
+---
+
+## 2. Optimal C++ Code (Kadane's Algorithm)
+
+Chalo iska ekdum chota aur crisp code dekhte hain:
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <algorithm> // sort() ke liye
+#include <climits>
+#include <algorithm>
 using namespace std;
-
-bool pairWithDifferenceOptimal1(vector<int>& arr, int K) {
-    // Step 1: Array ko sort karo
-    sort(arr.begin(), arr.end()); // O(N log N)
-
-    int i = 0;
-    int j = 1;
-    int n = arr.size();
-
-    // Step 2: Two-pointer loop
-    while (i < n && j < n) {
-        int diff = arr[j] - arr[i];
-
-        if (diff == K && i != j) {
-            cout << "Pair mil gaya: " << arr[i] << " aur " << arr[j] << endl;
-            return true;
-        }
-        else if (diff < K) {
-            j++; // Diff bada karne ke liye j badhao
-        }
-        else {
-            i++; // Diff chota karne ke liye i badhao
-        }
-    }
-    return false;
-}
-
-```
-
-### Complexity:
-
-* **Time Complexity:** **$O(N \log N)$** $\rightarrow$ Loop toh sirf $O(N)$ chal raha hai, par array ko shuruat me sort karne me $O(N \log N)$ time lagta hai.
-* **Space Complexity:** **$O(1)$** $\rightarrow$ Humne koi extra space nahi li, jo kiya asli array me hi kiya.
-
----
-
-## Approach 2: HashMap (The Super Fast Way)
-
-Agar interviewer bole: *"Mujhe $O(N \log N)$ se bhi tez chahiye, linear time $O(N)$ me karke dikhao!"* tab hum use karenge **HashMap (`unordered_set`)**.
-
-Isme logic bohot simple hai. Hum array ke har element $X$ par jayenge aur dimaag lagayenge ki agar $X$ hamara ek number hai, toh doosra number kya ho sakta hai taaki difference $K$ aaye?
-Do possibilities hain:
-
-1. $X - \text{Doosra Number} = K \implies \text{Doosra Number} = X - K$
-2. $\text{Doosra Number} - X = K \implies \text{Doosra Number} = X + K$
-
-Hum bas check karenge ki kya hashmap me $(X - K)$ ya $(X + K)$ me se kuch bhi pehle se maujood hai? Agar hai, toh pair mil gaya! Agar nahi, toh $X$ ko hashmap me daal do.
-
-### C++ Code (HashMap)
-
-```cpp
-#include <iostream>
-#include <vector>
-#include <unordered_set> // HashSet ke liye
-using namespace std;
-
-bool pairWithDifferenceOptimal2(vector<int>& arr, int K) {
-    unordered_set<int> s;
-
-    for (int i = 0; i < arr.size(); i++) {
-        int x = arr[i];
-
-        // Check karo ki kya (x - K) ya (x + K) hashset me pehle se hai
-        if (s.find(x - K) != s.end() || s.find(x + K) != s.end()) {
-            return true;
-        }
-
-        // Current element ko set me daal do
-        s.insert(x);
-    }
-    return false;
-}
-
-```
-
-### Complexity:
-
-* **Time Complexity:** **$O(N)$** $\rightarrow$ Humne array ko sort nahi kiya, sirf ek baar loop chalaya aur Hashset me dhoodhna (lookup) average me $O(1)$ hota hai.
-* **Space Complexity:** **$O(N)$** ❌ $\rightarrow$ Kyuki hume saare elements ko store karne ke liye extra `unordered_set` banana pada.
-
----
-
-## Final Comparison (Interview me kya bolna hai?)
-
-| Approach | Time Complexity | Space Complexity | Array Modified? |
-| --- | --- | --- | --- |
-| **Brute Force** | $O(N^2)$ | $O(1)$ | No |
-| **Two-Pointer** | $O(N \log N)$ | $O(1)$ | Yes (Sort karna padta hai) |
-| **HashMap** | $O(N)$ 🔥 | $O(N)$ ❌ | No |
-
-Bhai, dono approaches ekdum makkhan ki tarah clear hui?
-
-
-
-Bhai, tumhari algorithms ki bhookh dekh kar maza aa gaya!
-
-Dekho, **Time Complexity** ke maamle me toh $O(N)$ (HashMap waali approach) se fast nahi kiya ja sakta, kyuki array ke elements ko ek baar toh dekhna hi padega. Aur **Space Complexity** ke maamle me $O(1)$ (Two-Pointer waali approach) se behtar nahi ho sakta, kyuki bina memory liye kaam ho raha hai.
-
-Lekin ek aisi special situation (ya context) hai jahan hum **dono ka fayda ek saath** utha sakte hain—matlab **Time bhi $O(N)$ lage aur Extra Space bhi $O(1)$ lage!** Ye tab possible hai jab interviewer tumse kahe: **"Array already SORTED di hui hai, ab bina extra space liye $O(N)$ me karke dikhao."** Tab hum Two-Pointer approach lagayenge, par hamara code pehle se zyada clean, optimized aur fast chalega. Chalo dekhte hain kaise!
-
----
-
-## Ultra-Optimal Approach: Fast Two-Pointer (Jab Array Sorted Ho)
-
-Agar array pehle se sorted hai, toh hume `sort()` lagane ki zaroorat nahi hai (jiski wajah se pehle $O(N \log N)$ time lag raha tha). Hum bina kisi inner loop ya `if-else` ki lambi khichdi ke, sirf ek simple `while` loop me isko bohot fast chala sakte hain.
-
-### C++ Code:
-
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-bool pairWithDifferenceUltraOptimal(vector<int>& arr, int K) {
-    int n = arr.size();
-    int i = 0;
-    int j = 1;
-
-    // K hamesha positive le rahe hain taaki calculation me gadbad na ho
-    K = abs(K); 
-
-    while (i < n && j < n) {
-        int diff = arr[j] - arr[i];
-
-        // Agar pair mil gaya aur dono alag elements hain
-        if (diff == K && i != j) {
-            cout << "Ultra-Optimal Pair: " << arr[i] << " aur " << arr[j] << endl;
-            return true;
-        }
-        
-        // Agar difference chota hai, toh right pointer (j) ko aage badhao
-        if (diff < K) {
-            j++;
-        } 
-        // Agar difference bada hai, toh left pointer (i) ko aage badhao
-        else {
-            i++;
-        }
-
-        // Edge Case: Agar dono pointer ek hi jagah aa jayein, toh j ko aage badhna padega
-        if (i == j) {
-            j++;
-        }
-    }
-    return false;
-}
-
-int main() {
-    // Maan lo interviewer ne sorted array hi diya hai
-    vector<int> arr = {2, 3, 5, 20, 50}; 
-    int K = 17;
-
-    pairWithDifferenceUltraOptimal(arr, K);
-
-    return 0;
-}
-
-```
-
----
-
-## Yeh Pehle Se Better Kyun Hai? (The Ultimate Solution)
-
-Agar array sorted mil jaye, toh ye pure universe ki sabse best approach ban jati hai:
-
-1. **Time Complexity: $O(N)$** $\rightarrow$ Kyuki humne koi sorting nahi ki aur na hi koi nested loops lagaye. Dono pointers maximum $N$ steps chalenge, isliye linear time me kaam khatam.
-2. **Space Complexity: $O(1)$** $\rightarrow$ Koi HashMap use nahi kiya, koi naya array nahi banaya.
-3. **No Overhead:** HashMap me internal hashing aur collisions ki wajah se kabhi-kabhi hidden time lagta hai, par is pure two-pointer code me simple addition/subtraction ho raha hai, jo CPU ke liye sabse fast hota hai.
-
-## Ek Choti Si Trick (Bitwise Optimization)
-
-Agar tumse interviewer pooche ki code ko micro-level par aur fast kaise karein, toh tum bol sakte ho ki jahan hum `abs(K)` nikalte hain ya conditions check karte hain, wahan C++ compilers aaj kal khud hi unhe bitwise levels par optimize kar dete hain.
-
-Toh bhai, "Pair With Given Difference" ki kahani yahan aakar khatam hoti hai. Ab tum Brute, Two-Pointer, HashMap, aur Ultra-Optimal sab jaante ho! Koi aur doubt is question me?
-
-Bhai, tumhare is code me dimaag tumne ekdum sahi lagaya hai, par is baar **chote-chote kuch bugs (galatiyan) aur syntax errors** hain jo edge cases ke aate hi ya code compile karte hi poora system fadh denge.
-
-Sabse pehle, tumne fir se do functions ka naam bilkul same (`hasPairWithDifference`) rakh diya hai, jisse compiler gussa ho jayega aur error dega. Inhe alag naam dena padega (jaise `findPairOptimal` aur `findPairHashMap`).
-
-Chalo ab tumhare is code par un **chaaro edge cases** (Negative, Single, Zero, Duplicates) ka asar dekhte hain aur dhoondte hain ki bugs kahan hain!
-
----
-
-## 1. Negative Elements Ke Liye (🚨 Optimal aur HashMap Dono Me Trap Hai!)
-
-### A. Brute Force Me:
-
-Tumne `abs(arr[i] - arr[j]) == x` use kiya hai. Yeh **negative numbers ke liye sahi chalega**, kyuki absolute difference sign ko hata deta hai.
-
-### B. Optimal (Two-Pointer) Me Bug:
-
-Tumne code me likha hai:
-
-```cpp
-int diff = abs(arr[j] - arr[i]);
-
-```
-
-Bhai, kyuki tumne shuruat me hi `sort(arr.begin(), arr.end())` kar diya hai, iska matlab `arr[j]` hamesha `arr[i]` se bada ya barabar hoga (kyuki `j > i`).
-
-* Toh `arr[j] - arr[i]` hamesha positive hi aayega, yahan `abs()` lagane ki koi zaroorat nahi hai.
-* **Lekin asar kya padega?** Agar array me negative numbers hain, jaise `[-20, -5, 10]`, sort hone ke baad bhi `arr[j] - arr[i]` perfectly kaam karega. So, Two-Pointer logic safe hai, bas `abs()` faltu hai. **(PASS ✅)**
-
-### C. HashMap Me BADA Bug:
-
-Tumne HashMap wale function me ek `while` loop laga diya hai:
-
-```cpp
-while (s.find(x-K)!=s.end() || s.find(x+K)!=s.end()) { return true; }
-
-```
-
-Bhai, yahan `while` lagane ki koi zaroorat nahi thi, sirf ek single **`if` condition** aayegi. Kyuki agar element mil gaya toh hume turant `true` return karke nikal jana hai, loop nahi chalana hai.
-
----
-
-## 2. Ek Hi Element Ke Liye (`arr = {5}`, Size N = 1)
-
-* **Brute Force:** `i = 0` par chalega, par `j = i+1` yani `1` par condition `j < 1` false ho jayegi. `false` return karega. **(Safe ✅)**
-* **Optimal (Two-Pointer):** `i = 0`, `j = 1`. Condition check hogi: `while (i < 1 && j < 1)`. Yahan `j < 1` yani `1 < 1` false ho jayega, loop chalega hi nahi aur niche aakar `return 0;` (false) ho jayega. **(Safe ✅)**
-* **HashMap:** Loop sirf ek element ke liye chalega, set me check karega (kuch nahi milega), insert karega aur `false` return karega. **(Safe ✅)**
-
----
-
-## 3. Array Me `0` (Zero) Present Ho (`[0, 20, 50]`, $K = 20$)
-
-* **Brute, Optimal, aur HashMap:** Teeno cases me math aur subtraction perfectly chalenge. Zero ka difference nikalne me koi problem nahi aati (jaise `20 - 0 = 20`). **(PASS ✅)**
-
----
-
-## 4. Duplicate Elements Ho Aur Diff $K = 0$ Ho! (🚨 SABSE BADA TRAP!)
-
-Interviewer ka sabse favorite trap ye hota hai: **"Agar difference $K = 0$ diya ho aur array me duplicates hon, jaise `[5, 5, 10]`, toh kya tumhara code true dega?"**
-
-Chalo check karte hain tumhare teeno functions ko:
-
-### A. Brute Force Me:
-
-`i = 0` (value 5), `j = 1` (value 5). `abs(5 - 5) == 0`. Match ho gaya! `true` return karega. **(PASS ✅)**
-
-### B. Optimal (Two-Pointer) Me Bug:
-
-Maan lo array hai `[5, 5, 10]` aur $K = 0$.
-
-* Shuru me `i = 0` (value 5), `j = 1` (value 5).
-* `diff = 5 - 5 = 0`. Condition check: `if (diff == x && i != j)` $\rightarrow$ `0 == 0 && 0 != 1` $\rightarrow$ **True!** Yeh sahi se `true` return kar dega.
-* **Lekin agar element na mile toh?** Tumne if-else me likha hai:
-```cpp
-else if (diff > x) { i++; }
-else { j++; }
-
-```
-
-
-Agar `diff < x` hoga toh `j++` hoga. Lekin tumne niche ek aur condition lagayi hai:
-```cpp
-if (i == j) { j++; }
-
-```
-
-
-Yeh condition safe hai, duplicates ko handle kar legi. **(PASS ✅)**
-
-### C. HashMap Me BADA Bug (Sirf K = 0 ke liye):
-
-Agar $K = 0$ hai aur array me pehla `5` aaya.
-
-* `x = 5`. Set me check karega `x - 0` yani `5` hai kya? Abhi set khali hai, toh nahi milega.
-* Phir `s.insert(5)` ho jayega. Ab set me ek `5` hai.
-* Agli baar jab dusra `5` aayega, toh `x = 5`. Set me check karega `x - 0` yani `5` hai kya? Is baar use purana wala `5` mil jayega! Aur ye `true` return kar dega.
-
-**Lekin galti kahan hai?** Galti tumne variables banane me ki hai. Tumne loop me likha hai: `int target = x;` par us `target` variable ka pure code me kahin use hi nahi kiya! Aur `while` loop ki wajah se code ganda lag raha hai.
-
----
-
-## Ekdum Perfect Aur Clean Code (Saare Bugs Fixed)
-
-Bhai, tumhare pure code ko standard format me clean kar diya hai, saare extra/faltu conditions aur `while` loops hata kar `if` laga diye hain:
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-#define ll long long
-#define endl '\n'
-#define all(x) (x).begin(), (x).end()
 
 class Solution {
 public:
-    // 1. Brute Force (Perfect hai)
-    bool findPairBrute(vector<int> &arr, int x) {
-        for (int i = 0; i < arr.size(); i++) {
-            for (int j = i + 1; j < arr.size(); j++) {
-                if (abs(arr[i] - arr[j]) == x) {
-                    return true;
-                }
-            }
-        }
-        return false; 
-    }
+    int maxSubArrayOptimal(vector<int>& nums) {
+        int maxSum = INT_MIN; // Global maximum
+        int currentSum = 0;   // Local running sum
 
-    // 2. Optimal Two-Pointer (Naam badla aur cleanly refactor kiya)
-    bool findPairOptimal(vector<int>& arr, int N, int x) {
-        sort(arr.begin(), arr.end());
-        
-        int i = 0;
-        int j = 1;
-        
-        while (i < N && j < N) {
-            int diff = arr[j] - arr[i]; // Sorted hai toh abs() ki need nahi hai
-            
-            if (diff == x && i != j) {
-                return true;
-            } 
-            else if (diff < x) {
-                j++; // Diff chota hai, bada karne ke liye j badhao
-            } 
-            else {
-                i++; // Diff bada hai, chota karne ke liye i badhao
-            }
-            
-            // Edge Case: Dono pointer same index par nahi hone chahiye
-            if (i == j) {
-                j++;
-            }
-        }
-        return false;
-    }
+        for (int i = 0; i < nums.size(); i++) {
+            currentSum += nums[i]; // Element ko add kiya
 
-    // 3. HashMap Approach (while loop ka bug fix kiya aur if condition lagayi)
-    bool findPairHashMap(vector<int>& arr, int K) {
-        unordered_set<int> s;
-        for (int x : arr) {
-            // FIX: while loop hata kar simple IF condition lagayi
-            if (s.find(x - K) != s.end() || s.find(x + K) != s.end()) {
-                return true;
+            // 1. Agar currentSum ab tak ka best hai, toh save kar lo
+            if (currentSum > maxSum) {
+                maxSum = currentSum;
             }
-            s.insert(x);
+
+            // 2. MASTER STEP: Agar sum negative ho gaya, toh use aage mat le jao
+            if (currentSum < 0) {
+                currentSum = 0; // Nayi shuruat!
+            }
         }
-        return false;
+
+        return maxSum;
     }
 };
 
 int main() {
-    vector<int> edges = {90, 70, 20, 80, 50};
-    int target = 20; // 90 - 70 = 20 hota hai
-
-    Solution sol;
-    // Tum kisi bhi ek function ko test kar sakte ho ab alag naam se
-    bool ans = sol.findPairOptimal(edges, edges.size(), target);
+    vector<int> nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
     
-    if(ans) cout << "True" << endl;
-    else cout << "False" << endl;
-
+    Solution sol;
+    cout << "Optimal (Kadane's) Max Sum: " << sol.maxSubArrayOptimal(nums) << endl; 
+    // Output: 6 (Subarray: [4, -1, 2, 1])
+    
     return 0;
 }
 
 ```
 
-### Main Fixes Jo Maine Kiye:
+---
 
-1. Same name wale duplicate functions ka naam badla (`findPairOptimal`, `findPairHashMap`).
-2. HashMap ke andar se falthu ka `while` loop aur un-used `target` variable hataya, uski jagah standard `if` condition lagayi.
-3. Two-pointer me `abs()` hataya kyuki sorted array me `arr[j] - arr[i]` hamesha positive hi hoga.
+## 3. Complexity Analysis
 
-Ab ye code kisi bhi platform par submit hone ke liye ekdum ready hai bhai! Aur koi shak isme?
+### 1. Time Complexity: $O(N)$
+
+* **Reason:** Humne pure array ko sirf **ek hi baar** ek single `for` loop se traverse kiya hai. Isliye iska time linear hai, yaani **$O(N)$**. Yeh itna fast hai ki $10^5$ ya $10^6$ size ke array ko bhi milliseconds me solve kar dega. LeetCode par ye 100% paas hoga.
+
+### 2. Space Complexity: $O(1)$
+
+* **Reason:** Humne koi extra vector, array ya map nahi banaya. Sirf do variables (`maxSum` aur `currentSum`) use kiye hain jo constant space lete hain.
+
+---
+
+## 4. Un Chaaro Edge Cases Par Kadane Ka Test
+
+Chalo dekhte hain hamara ye optimal hero un chaaro cases me fategi ya chalega:
+
+* **Case 1: Negative Elements (Jaise `[-3, -1, -5, -2]`)** $\rightarrow$ **PASS 🔥**
+* **Interviewer ka Trap:** Log sochte hain agar saare negative hain toh `currentSum = 0` karne se gaddbadd ho jayegi.
+* **Dry Run:** * `i=0`: `currentSum = -3`. `maxSum` ban gaya `-3`. Fir `currentSum < 0` toh `currentSum = 0` ho gaya.
+* `i=1`: `currentSum = -1`. Kya `-1 > -3`? Haan! `maxSum` update hokar **`-1`** ho gaya. Fir `currentSum = 0`.
+* Aakhiri me answer exact `-1` aayega, jo ki sabse bada element hai. Code perfectly pass!
+
+
+
+
+* **Case 2: Ek Hi Element (Jaise `[5]`)** $\rightarrow$ **PASS ✅**
+* Loop 1 baar chalega, `currentSum = 5`, `maxSum = 5` ho jayega. Perfect.
+
+
+* **Case 3: Array Me `0` Present Ho (Jaise `[-2, 0, 3]`)** $\rightarrow$ **PASS ✅**
+* `0` jodne se koi farq nahi padta. `maxSum` sahi se `3` ko pakad lega.
+
+
+* **Case 4: Duplicate Elements (Jaise `[2, 2, -1, 4, 4]`)** $\rightarrow$ **PASS ✅**
+* Duplicates aapas me jodte chale jayenge aur `maxSum` ko update karte rahenge.
+
+
+
+Bhai, Kadane's Algorithm ka logic aur uski taqat samajh me aayi? Isme agar interviewer subarray ke sum ke sath-sath **wo subarray print karne ko bole** (start aur end index maange), toh wo aata hai tumhe ya bataun?
+
+Bhai, tumne ekdum deep dive karne ka mann bana liya hai! Kadane's Algorithm waise toh bohot solid hai, par interview me interviewer tumse iske andar ke **saare edge cases aur micro-level details** khurad-khurad kar poocha karega.
+
+Chalo pehle hamare un **chaaro standard edge cases** ko Kadane's code par step-by-step test karte hain, aur phir kuch **naye shaandar edge cases** bhi dekhte hain jo tumhara dimaag khol denge!
+
+---
+
+## 1. Purane Chaaro Edge Cases Ka Detailed Post-Mortem
+
+Hamare pass Kadane ka ye do lines ka main logic hai:
+
+```cpp
+currentSum += nums[i];
+if (currentSum > maxSum) maxSum = currentSum;
+if (currentSum < 0) currentSum = 0;
+
+```
+
+### Case 1: All Negative Elements (`nums = [-3, -2, -5, -4]`)
+
+* **Doubt:** Log sochte hain ki agar saare numbers negative hain, toh `currentSum < 0` ki wajah se wo har baar `0` ho jayega, toh kya `maxSum` kabhi update hoga?
+* **Reality:** Update **pehle** hota hai aur `0` **baad me** hota hai!
+* `i = 0` (`-3`): `currentSum = -3`. Kya `-3 > INT_MIN`? Haan! `maxSum = -3` ho gaya. Ab `currentSum < 0` hai, toh `currentSum = 0` ho gaya.
+* `i = 1` (`-2`): `currentSum = 0 + (-2) = -2`. Kya `-2 > -3`? Haan! `maxSum = -2` ho gaya. Phir `currentSum = 0` ho gaya.
+
+
+* **Result:** Loop ke aakhiri me `maxSum = -2` milega, jo ki bilkul sahi answer hai. (PASS ✅)
+
+### Case 2: Ek Hi Element (`nums = [-5]` ya `[4]`)
+
+* **Reality:** Loop sirf ek hi baar chalega.
+* Agar `[4]` hai: `currentSum = 4`, `maxSum = 4` ho jayega. `currentSum < 0` false hoga. (PASS ✅)
+* Agar `[-5]` hai: `currentSum = -5`, `maxSum = -5` ho jayega. Phir `currentSum = 0` hoga. Output `-5` aayega, jo ki sahi hai. (PASS ✅)
+
+
+
+### Case 3: Zeros Present Hon (`nums = [-2, 0, -1]`)
+
+* **Reality:** `0` se addition par koi asar nahi padta, par Kadane me ye reset ko dhyan se handle karta hai.
+* `i = 0` (`-2`): `maxSum = -2`, `currentSum` reset hoke `0`.
+* `i = 1` (`0`): `currentSum = 0 + 0 = 0`. Kya `0 > -2`? Haan! `maxSum = 0` ho gaya. `currentSum < 0` false hai (0 chota nahi hota 0 se).
+
+
+* **Result:** Output `0` aayega, jo ki sahi hai kyuki `-2` aur `-1` se bada `0` khud hai. (PASS ✅)
+
+### Case 4: Duplicate Elements (`nums = [2, 2, -2, 2, 2]`)
+
+* **Reality:** Duplicates positive hon toh sum badhta jayega, negative hon toh kam hoga.
+* Shuru ke do `2` milkar `maxSum = 4` kar denge.
+* Agla `-2` aayega toh `currentSum = 4 - 2 = 2` ho jayega. Kyuki `2 < 0` nahi hai, toh reset nahi hoga! Yeh aage badhega aur agle `2` ko jod kar fir se `4` aur fir `6` bana dega. (PASS ✅)
+
+
+
+---
+
+## 2. Naye Special Edge Cases (Jo Interviewer Fenk Kar Marega!)
+
+Ab aate hain un cases par jo aksar bache miss kar jaate hain aur code fat jata hai.
+
+### Case 5: Integer Overflow (`nums = [10^9, 10^9, 10^9]`) 🚨 **TRAP!**
+
+* **Problem:** Agar array me bade positive numbers hain, toh unhe `int` variable me jodte-jodte value `2,147,483,647` (int ki max limit) ko paar kar jayegi. C++ me isse **Integer Overflow** ho jayega aur tumhara answer garbage (negative) me chala jayega!
+* **Modification:** Hume variables ka data type **`long long`** rakhna chahiye taaki overflow na ho.
+```cpp
+long long maxSum = LLONG_MIN;
+long long currentSum = 0;
+
+```
+
+
+
+### Case 6: Subarray With Multiple Zeros & Negatives (`nums = [0, 0, -1, 0]`)
+
+* **Reality:** Yahan max sum `0` hona chahiye. Kadane ise kaise chalayega?
+* `i = 0` (`0`): `currentSum = 0`, `maxSum = 0`.
+* `i = 1` (`0`): `currentSum = 0`, `maxSum = 0`.
+* `i = 2` (`-1`): `currentSum = -1`, `maxSum` `0` hi rahega. Fir `currentSum` reset hoke `0`.
+
+
+* **Result:** Ekdum smoothly `0` return karega. (PASS ✅)
+
+### Case 7: Pura Array Hi Balanced Ho (`nums = [-2, 2, -3, 3]`)
+
+* **Reality:** Isme alag-alag tukdon ka sum `0` ban raha hai.
+* `-2` par `maxSum = -2`, reset hoke `0`.
+* `2` par `currentSum = 2`, `maxSum = 2`.
+* `-3` par `currentSum = 2 - 3 = -1`, `maxSum` `2` hi rahega. Fir reset hoke `0`.
+* `3` par `currentSum = 3`, `maxSum = 3`.
+
+
+* **Result:** Output `3` aayega (jo ki aakhiri element hai). (PASS ✅)
+
+---
+
+## 💡 Ultra-Full Proof Kadane's Code (Saare Edge Cases Pass)
+
+Bhai, ye lo ekdum full-proof code jisme maine **Integer Overflow** se bachne ke liye `long long` lagaya hai aur standard `int` me cast karke return kiya hai. Yeh code duniya ke har edge case ko handle kar lega:
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    int maxSubArrayUltimate(vector<int>& nums) {
+        // Safe Side: long long use kiya taaki Case 5 (Overflow) handle ho jaye
+        long long maxSum = LLONG_MIN; 
+        long long currentSum = 0;
+
+        for (int i = 0; i < nums.size(); i++) {
+            currentSum += nums[i];
+
+            if (currentSum > maxSum) {
+                maxSum = currentSum;
+            }
+
+            if (currentSum < 0) {
+                currentSum = 0; // Negative sum ko aage carry nahi karna
+            }
+        }
+
+        return (int)maxSum; // Wapas int me convert karke return kiya
+    }
+};
+
+int main() {
+    // Aisa test case jisme saare edge cases cover ho rahe hain
+    vector<int> nums = {-3, -2, -5, -1}; // All negative case
+    
+    Solution sol;
+    cout << "Ultimate Kadane Result: " << sol.maxSubArrayUltimate(nums) << endl; 
+    // Output: -1 (Ekdum Perfect)
+    
+    return 0;
+}
+
+```
+
+Bhai, ab Kadane's Algorithm me se interviewer chahe asmaan se edge case laaye ya paatal se, tumhara ye logic aur ye code kabhi nahi tutega!
+
+Ab bolo, Kadane pura hazam ho gaya ya abhi bhi koi dukaari bachi hai dimaag me?
+
+# Max Difference Between 2 Elmements
+
+
+Bhai, Maximum Difference question ka **Brute Force Approach** ekdum seedha aur aasan hai. Isme hum bina zyada dimaag lagaye duniya ke saare possible pairs ka difference nikalte hain aur check karte hain ki sabse bada difference kaun sa hai.
+
+Chalo iska poora logic aur code samajhte hain.
+
+---
+
+## Brute Force Ka Logic (Nested Loops)
+
+Hamari shart kya thi? Bada element hamesha chote element ke **baad (right side)** aana chahiye. Yaani agar hum `arr[j] - arr[i]` kar rahe hain, toh index `j` hamesha `i` se bada (`j > i`) hona chahiye.
+
+1. **Outer Loop (`i`):** Yeh loop array ke pehle element se shuru hoga aur ek-ek karke aage badhega. Yeh hamare pehle element (yaani chote element) ko fix karega.
+2. **Inner Loop (`j`):** Yeh loop hamesha `i + 1` se shuru hoga (taaki hamesha `i` ke baad wale elements ko hi check kare). Yeh hamare dusre element (yaani bade element) ko target karega.
+3. Har baar hum `arr[j] - arr[i]` nikalenge aur use apne `maxDiff` variable se compare karke update karte rahenge.
+
+---
+
+## Brute Force C++ Code ($O(N^2)$)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    int maximumDifferenceBrute(vector<int>& arr) {
+        int n = arr.size();
+        
+        // Edge Case: Agar array me 2 se kam elements hain toh difference nahi nikal sakta
+        if (n < 2) return -1; 
+
+        int maxDiff = INT_MIN; // Shuru me sabse choti possible value rakh li
+
+        // Outer loop: Pehla element chunne ke liye (i)
+        for (int i = 0; i < n; i++) {
+            
+            // Inner loop: Dusra element chunne ke liye, jo hamesha i ke BAAD hoga (j = i + 1)
+            for (int j = i + 1; j < n; j++) {
+                
+                int currentDiff = arr[j] - arr[i];
+                
+                // Agar naya difference purane se bada hai, toh update karo
+                if (currentDiff > maxDiff) {
+                    maxDiff = currentDiff;
+                }
+            }
+        }
+
+        // Edge Case: Agar array sirf ghat-te kram me ho (e.g., [9, 7, 5]), 
+        // toh maxDiff zero ya negative aayega. Us case me hum -1 return karenge.
+        if (maxDiff <= 0) return -1;
+
+        return maxDiff;
+    }
+};
+
+int main() {
+    vector<int> arr = {7, 1, 5, 3, 6, 4}; // 6 - 1 = 5 (Max Diff)
+    
+    Solution sol;
+    cout << "Brute Force Max Difference: " << sol.maximumDifferenceBrute(arr) << endl;
+    
+    return 0;
+}
+
+```
+
+---
+
+## Complexity Analysis (Brute Force Kyun Bura Hai?)
+
+### 1. Time Complexity: $O(N^2)$
+
+* **Kyun?** Kyuki humne yahan nested loops (loop ke andar loop) chalaya hai. Outer loop $N$ baar chalega aur inner loop lagbhag $N/2$ baar. Total operations $N \times (N-1) / 2$ honge, jo Big-O me **$O(N^2)$** banata hai.
+* Agar array ka size $10^5$ de diya jaye, toh ye code $10^{10}$ operations karega aur platform par **TLE (Time Limit Exceeded)** de dega.
+
+### 2. Space Complexity: $O(1)$
+
+* **Kyun?** Kyuki humne koi naya array ya extra memory store karne ke liye use nahi kiya, sirf loop variables aur `maxDiff` banaya hai.
+
+---
+
+## Charo Edge Cases Par Yeh Brute Force Kaise Chalega?
+
+Yeh brute force code slow zaroor hai, par ye har ek case ko bina kisi modification ke handle kar leta hai:
+
+1. **Negative Elements (`[-2, -5, 10]`)**: `j = 2` (value 10) aur `i = 1` (value -5) par loop chalega. `10 - (-5) = 15` nikalega. Standard math operation hai, perfectly **PASS ✅** hoga.
+2. **Ek Hi Element (`[5]`)**: Code ki shuruat me hi `if (n < 2) return -1;` check laga hai, isliye bina loop me ghuse safe exit karega aur **PASS ✅** hoga.
+3. **Zero Present Ho (`[0, 5, 2]`)**: `5 - 0 = 5` nikalega, maths sahi chalegi, **PASS ✅** hoga.
+4. **Duplicate Elements (`[2, 2, 5, 5]`)**: `5 - 2 = 3` nikalega, duplicates aapas me handle ho jayenge, perfectly **PASS ✅** hoga.
+
+Bhai, brute force ekdum crystal clear ho gaya? Ab iska optimal ($O(N)$) wala logic dimaag me fresh hai ya uska bhi ek baar dry-run karke dikhaun?
+
+Bhai, Maximum Difference question ke liye **Better Approach** thodi alag hai. Jaise pichle questions (jaise subset sum ya maximum subarray) me hume koi na koi beech ki approach (prefix sum ya nested loop optimization) mil jaati thi, is question me ek unique twist hai.
+
+Agar interviewer tumse kahe ki: *"Bhai, mujhe $O(N^2)$ brute force nahi chahiye, aur tum direct $O(N)$ optimal par bhi nahi ja sakte. Mujhe koi beech ki approach ($O(N \log N)$) batao."*
+
+Toh wahan kaam aati hai hamari **Sorting & Auxiliary Memory (Min/Max Tracking)** approach. Chalo iska logic samajhte hain.
+
+---
+
+## Better Approach Ka Logic ($O(N \log N)$)
+
+Hamari shart kya hai? `j > i` hona chahiye aur `arr[j] - arr[i]` maximum hona chahiye.
+
+Hum kya karte hain? Ek naya structure banate hain jahan hum har element ke saath uska **original index** store kar lete hain (C++ me `pair<int, int>` ka use karke).
+
+1. Hum ek naya vector banate hain jo pairs store karega: `{element_value, original_index}`.
+2. Ab hum is naye vector ko elements ki value ke hisab se **Sort** kar dete hain ($O(N \log N)$).
+3. Sort karne ke baad, hamare paas chote elements shuruat me honge aur bade elements aakhiri me honge.
+4. Ab hum do loops lagane ke bajay ek smart tarika use karte hain:
+* Shuruat se (chote elements se) hum index check karte hain.
+* Kyuki array sorted hai, hume bas ye check karna hai ki kya koi bada element aisa hai jiska original index chote element ke original index se bada (`j > i`) hai?
+
+
+
+---
+
+## Better C++ Code ($O(N \log N)$)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    int maximumDifferenceBetter(vector<int>& arr) {
+        int n = arr.size();
+        if (n < 2) return -1;
+
+        // Step 1: Element aur uske original index ka pair banao
+        vector<pair<int, int>> v;
+        for (int i = 0; i < n; i++) {
+            v.push_back({arr[i], i});
+        }
+
+        // Step 2: Values ke basis par sort karo (O(N log N))
+        sort(v.begin(), v.end());
+
+        int maxDiff = -1;
+        int minIndexSoFar = v[0].second; // Ab tak ka sabse chota original index
+
+        // Step 3: Sorted array par traverse karo
+        for (int i = 1; i < n; i++) {
+            int currentElement = v[i].first;
+            int currentIndex = v[i].second;
+
+            // Agar current element ka index piche mile kisi chote element ke index se bada hai
+            if (currentIndex > minIndexSoFar) {
+                // Hum diff nikalenge current element aur us value ka jo minIndexSoFar par thi
+                // Par hume value nikalne ke liye piche track rakhna hoga.
+                // Isko simple rakhne ke liye hum pure elements ka valid pairs check kar sakte hain
+            }
+            
+            // Min index ko update karte chalo
+            minIndexSoFar = min(minIndexSoFar, currentIndex);
+        }
+
+        // Chalo isko aur simple standard "Suffix Maximum" ya "Prefix Minimum" array se samajhte hain
+        // Jo real O(N) Space aur O(N) Time leti hai (Brute se behtar, Optimal se thodi piche)
+        return maxDiff;
+    }
+
+    // ALTERNATE BETTER APPROACH (Prefix Minimum Array) - O(N) Time, O(N) Space
+    int maximumDifferenceBetterPrefixMin(vector<int>& arr) {
+        int n = arr.size();
+        if (n < 2) return -1;
+
+        // Ek extra array banate hain jo har point tak ka minimum store karega
+        vector<int> minArray(n);
+        minArray[0] = arr[0];
+        for(int i = 1; i < n; i++) {
+            minArray[i] = min(minArray[i-1], arr[i]);
+        }
+
+        int maxDiff = -1;
+        // Ab simple ek loop chala kar check karte hain
+        for(int j = 1; j < n; j++) {
+            int diff = arr[j] - minArray[j-1];
+            if(diff > maxDiff) {
+                maxDiff = diff;
+            }
+        }
+
+        if (maxDiff <= 0) return -1;
+        return maxDiff;
+    }
+};
+
+int main() {
+    vector<int> arr = {7, 1, 5, 3, 6, 4};
+    Solution sol;
+    cout << "Better Approach Max Diff: " << sol.maximumDifferenceBetterPrefixMin(arr) << endl;
+    return 0;
+}
+
+```
+
+*Note: Maine jo upar second code likha hai (`maximumDifferenceBetterPrefixMin`), wo interview me sabse best **Better Approach** maani jaati hai. Isme hum extra space ($O(N)$) use karte hain minimum elements ka track rakhne ke liye, jo brute force ke $O(N^2)$ time ko gira kar $O(N)$ kar deti hai, par space $O(1)$ nahi hoti.*
+
+---
+
+## Complexity Analysis (Better Approach)
+
+* **Time Complexity: $O(N)$**
+* **Kyun?** Kyuki humne do alag-alag loops chalaye hain (nested nahi hain). Pehla loop `minArray` banane ke liye ($N$ operations) aur doosra loop difference check karne ke liye ($N$ operations). Total time $O(N)$ ho gaya.
+
+
+* **Space Complexity: $O(N)$** ❌
+* **Kyun?** Kyuki humne ek extra `minArray` banaya hai size $N$ ka elements ko store karne ke liye. Yeh optimal isliye nahi hai kyuki bina is array ke bhi hum $O(1)$ space me kaam kar sakte hain (jo hamari final optimal approach thi).
+
+
+
+---
+
+## Charo Edge Cases Par Yeh Better Approach Kaise Chalega?
+
+1. **Negative Elements (`[-2, -5, 10]`)**: `minArray` banega `[-2, -5, -5]`. Jab `10` par check hoga, toh `10 - (-5) = 15` aayega. Perfectly **PASS ✅**
+2. **Ek Hi Element (`[5]`)**: Base condition `if (n < 2) return -1;` se safe exit ho jayega. **PASS ✅**
+3. **Zero Present Ho (`[0, 5, 2]`)**: `minArray` sahi se `0` ko pakad ke rakhega aur `5 - 0 = 5` diff de dega. **PASS ✅**
+4. **Duplicate Elements (`[2, 2, 5, 5]`)**: `minArray` duplicate elements par wahi value carry karega, subtraction par koi farq nahi padega. **PASS ✅**
+
+Bhai, samajh aaya ki ye Prefix Minimum wali approach $O(N)$ time toh le rahi hai par space $O(N)$ le rahi hai, isliye ye "Better" hai aur pichli wali jahan space $O(1)$ thi wo "Optimal" hai?
+
+
+Bhai, ab aate hain is question ke **Absolute Optimal Approach** par, jise pure internet par **"Maximum Difference (j > i)"** ya **"Best Time to Buy and Sell Stock"** ka base logic bola jata hai.
+
+Is approach me hum bina kisi extra array/space ke ($O(1)$ Space) aur bina kisi nested loop ke (**Sirf ek Single Pass - $O(N)$ Time**) me poora game khatam kar dete hain. Yeh code micro-seconds me chalta hai!
+
+---
+
+## 1. Optimal Logic (Dimaag Kaise Lagayein?)
+
+Socho, agar tum ek stock trader ho, aur tumhe sabse zyada munafa (maximum difference) chahiye, toh tum kya dimaag lagaoge?
+Tum har din khade hokar bas ek hi cheez sochoge: **"Agar mai aaj is price par bechta hoon, toh piche sabse sasta din kaun sa tha jab mai ise kharid sakta tha?"**
+
+### Hum do variables ka track rakhenge:
+
+1. **`minElement`**: Ab tak ka mila sabse chota number (shuru me ise `arr[0]` maan lenge).
+2. **`maxDiff`**: Ab tak ka mila sabse bada valid difference (shuru me ise `INT_MIN` ya `-1` rakh lenge).
+
+Hum array me index `1` se aage badhenge. Har element `arr[i]` par hum:
+
+* Pehle difference nikalenge: `currentDiff = arr[i] - minElement`.
+* Agar ye `currentDiff` hamare `maxDiff` se bada hai, toh use update kar denge.
+* Phir check karenge ki kya aaj ka element `arr[i]` hamare purane `minElement` se bhi chota hai? Agar haan, toh `minElement` ko update kar denge taaki aage aane wale bade elements ke liye aur bada difference ban sake!
+
+---
+
+## 2. Optimal C++ Code ($O(N)$ Time, $O(1)$ Space)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    int maximumDifferenceOptimal(vector<int>& arr) {
+        int n = arr.size();
+        
+        // Edge Case: Agar array me 2 se kam elements hain toh valid pair nahi ban sakta
+        if (n < 2) return -1; 
+
+        int minElement = arr[0]; // Pehla element hi ab tak ka minimum hai
+        int maxDiff = INT_MIN;   // Sabse chota possible difference track karne ke liye
+
+        // Sirf EK SINGLE LOOP (i = 1 se n-1 tak)
+        for (int i = 1; i < n; i++) {
+            
+            // 1. Aaj ke element aur ab tak ke sabse chote element ka difference nikalo
+            int currentDiff = arr[i] - minElement;
+
+            // 2. Agar ye difference ab tak ka best hai, toh save kar lo
+            if (currentDiff > maxDiff) {
+                maxDiff = currentDiff;
+            }
+
+            // 3. Apne minimum element ko update karo, taaki aage ke liye sasta price mile
+            if (arr[i] < minElement) {
+                minElement = arr[i];
+            }
+        }
+
+        // Edge Case: Agar array strictly decreasing ho (e.g., [9, 7, 5])
+        // toh maxDiff negative ya 0 aayega. Us case me -1 return karenge.
+        if (maxDiff <= 0) return -1;
+
+        return maxDiff;
+    }
+};
+
+int main() {
+    vector<int> arr = {7, 1, 5, 3, 6, 4}; // 6 - 1 = 5 (Max Diff)
+    
+    Solution sol;
+    cout << "Optimal Max Difference: " << sol.maximumDifferenceOptimal(arr) << endl;
+    
+    return 0;
+}
+
+```
+
+---
+
+## 3. Complexity Analysis (Interviewer ka Favorite)
+
+* **Time Complexity: $O(N)$** 🔥
+* **Kyun?** Kyuki humne poore array par sirf **ek baar** loop chalaya hai. Hum har element ko sirf ek baar touch kar rahe hain aur constant time operations ($O(1)$ checks) kar rahe hain.
+
+
+* **Space Complexity: $O(1)$** 🔥
+* **Kyun?** Kyuki humne pichli 'Better Approach' ki tarah koi `minArray` ya extra vector nahi banaya. Humne sirf do normal variables (`minElement` aur `maxDiff`) use kiye hain, jo memory me fix 4 या 8 bytes lete hain.
+
+
+
+---
+
+## 4. Charo Edge Cases Par Yeh Code Kaise Khelega?
+
+Chalo, is optimal code ka solid dry-run karte hain un cases ke liye:
+
+1. **Negative Elements (`arr = [-2, -5, 10, -1]`)** $\rightarrow$ **PASS ✅**
+* Shuru me `minElement = -2`.
+* `i = 1` (`-5`): `currentDiff = -5 - (-2) = -3`. `maxDiff` abhi wahi rahega, par `minElement` update hokar **`-5`** ho jayega!
+* `i = 2` (`10`): `currentDiff = 10 - (-5) = 15`. `maxDiff` turant update hokar **`15`** ban jayega.
+* Math perfectly sahi chalega.
+
+
+2. **Ek Hi Element (`arr = [5]`)** $\rightarrow$ **PASS ✅**
+* Base condition `if (n < 2) return -1;` chalegi aur loop me ghuse bina safely bahar nikal jayegi.
+
+
+3. **Zero Present Ho (`arr = [0, 5, 2]`)** $\rightarrow$ **PASS ✅**
+* `minElement = 0`. Jab `5` aayega, toh `5 - 0 = 5` max diff banega. Zero elements ke sign ya value ko mess-up nahi karega.
+
+
+4. **Duplicate Elements (`arr = [2, 2, 5, 2, 5]`)** $\rightarrow$ **PASS ✅**
+* Pointers ya conditions aapas me uljhenge nahi kyuki simple `if (arr[i] < minElement)` laga hai. Duplicate elements par values update nahi hongi, par subtraction perfectly sahi chalega ($5 - 2 = 3$).
+
+
+
+Bhai, ab Maximum Difference ka Brute ($O(N^2)$), Better ($O(N)$ Time & $O(N)$ Space), aur ye dhasu Optimal ($O(N)$ Time & $O(1)$ Space) teeno tarike dimaag me ekdum crystal clear ho gaye?
+
+
+Bhai, Optimal Approach ko lekar interviewer hamesha tumhe check karne ke liye **Edge Cases** ka hi sahara leta hai. Chalo, is $O(N)$ Time aur $O(1)$ Space wale optimal code par un **chaaro standard edge cases** aur **kuch special situations** ka poora breakdown dekhte hain taaki tumhe clear ho jaye ki code kahan aur kyun hamesha pass hoga.
+
+Hamara optimal logic in do lines par tikka hai:
+
+```cpp
+int currentDiff = arr[i] - minElement;
+if (currentDiff > maxDiff) maxDiff = currentDiff;
+if (arr[i] < minElement) minElement = arr[i];
+
+```
+
+---
+
+## 1. Negative Elements (`arr = [-2, -5, 10, -1, 4]`)
+
+**Doubt:** Kya negative values aane par `minElement` ka logic sahi chalega? Ya subtraction me sign badalne se galti hogi?
+
+**Dry Run:**
+
+* Shuruat me: `minElement = -2`, `maxDiff = INT_MIN`
+* **`i = 1` (Value = `-5`):** * `currentDiff = -5 - (-2) = -3`. Kya `-3 > INT_MIN`? Haan, toh `maxDiff = -3`.
+* Kya `-5 < -2`? Haan, toh **`minElement = -5`** ho gaya! (Yahi sabse zaroori step tha, ab hame naya sasta price mil chuka hai).
+
+
+* **`i = 2` (Value = `10`):** * `currentDiff = 10 - (-5) = 15`. Kya `15 > -3`? Haan, toh **`maxDiff = 15`**.
+* Kya `10 < -5`? Nahi.
+
+
+* **Result:** Final answer `15` aayega, jo ki bilkul sahi hai ($10 - (-5) = 15$). C++ me rules ke mutabik minus-minus plus ho jata hai, isliye math perfectly **PASS ✅** hoga.
+
+---
+
+## 2. Ek Hi Element (`arr = [5]`)
+
+**Doubt:** Agar array me sirf ek hi element ho, toh pair kaise banega?
+
+**Handling:** Code ki dusri hi line me humne safety net lagaya hai:
+
+```cpp
+if (n < 2) return -1;
+
+```
+
+Kyuki `1 < 2` sach hai, code loop ke andar ghuse bina hi safely `-1` (ya jo bhi invalid status interviewer maange) return kar dega. (PASS ✅)
+
+---
+
+## 3. Array Me `0` (Zero) Present Ho (`arr = [0, 5, -2, 4]`)
+
+**Doubt:** Kya `0` ke hone se minimum element track karne me ya zero se minus karne me koi glitch aayega?
+
+**Dry Run:**
+
+* Shuruat me: `minElement = 0`, `maxDiff = INT_MIN`
+* **`i = 1` (Value = `5`):** `currentDiff = 5 - 0 = 5` $\rightarrow$ `maxDiff = 5`. `minElement` `0` hi rahega.
+* **`i = 2` (Value = `-2`):** `currentDiff = -2 - 0 = -2`. `maxDiff` `5` hi rahega. Par `-2 < 0` hai, toh **`minElement = -2`** ho jayega.
+* **`i = 3` (Value = `4`):** `currentDiff = 4 - (-2) = 6` $\rightarrow$ `maxDiff = 6`.
+* **Result:** Output `6` aayega, jo ki zero aur negative dono ko handle karte hue sahi answer hai. (PASS ✅)
+
+---
+
+## 4. Duplicate Elements (`arr = [3, 3, 8, 3, 8]`)
+
+**Doubt:** Agar numbers baar-baar repeat ho rahe hon, toh kya conditions phasengi?
+
+**Reality:** Code me `if (arr[i] < minElement)` lagaya hai.
+
+* Agar agla element purane `minElement` ke barabar hai (jaise pehla `3` aur dusra `3`), toh condition false ho jayegi aur `minElement` wahi rahega.
+* Subtraction karne par `3 - 3 = 0` ya `8 - 3 = 5` perfectly chalega. Duplicates elements is linear tracking ko disturb nahi kar sakte. (PASS ✅)
+
+---
+
+## 5. Bonus Case: Strictly Decreasing Array (`arr = [9, 7, 5, 3]`)
+
+**Interviewer ka Special Trap:** "Bhai agar stock ke daam sirf girte hi ja rahe hain, toh tumhara code kya karega?"
+
+**Dry Run:**
+
+* Shuruat me: `minElement = 9`, `maxDiff = INT_MIN`
+* `i = 1` (`7`): `currentDiff = 7 - 9 = -2` $\rightarrow$ `maxDiff = -2`. Phir `minElement = 7`.
+* `i = 2` (`5`): `currentDiff = 5 - 7 = -2`. `maxDiff` `-2` hi rahega. `minElement = 5`.
+* Loop khatam hone par `maxDiff` ki value negative (`-2`) hi reh jayegi.
+* **Handling:** Hamare code ke end me check laga hai:
+```cpp
+if (maxDiff <= 0) return -1;
+
+```
+
+
+Kyuki koi profit banna possible nahi tha, code saaf-suthra `-1` return kar dega. Interviewer is check ko dekh kar bohot khush hote hain! (PASS ✅)
+
+---
+
+## Summary Sheet for Interview
+
+| Edge Case | Problem | Code Kaise Bachta Hai? | Result |
+| --- | --- | --- | --- |
+| **Negative Numbers** | Sign Confusion | C++ rules ($-\ \text{into}\ - = +$) automatically standard math follow karte hain. | **PASS ✅** |
+| **Single Element** | Array Index out of bound | `if (n < 2)` base case block kar deta hai. | **PASS ✅** |
+| **Zeros Present** | Variable Reset Errors | Logic values par chalta hai state par nahi, perfect subtraction hoti hai. | **PASS ✅** |
+| **Duplicates** | Infinite values/Stuck loops | Condition strict inequality (`<`) use karti hai, duplicate value ignore ho jati hai. | **PASS ✅** |
+| **Decreasing Array** | Negative Diff values | `if (maxDiff <= 0) return -1;` se negative tracking ruk jati hai. | **PASS ✅** |
+
+Bhai, ab optimal code ke saare edge cases ka darr ekdum dimaag se saaf?
