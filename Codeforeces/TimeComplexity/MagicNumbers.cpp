@@ -9,32 +9,25 @@ class Solution {
 public:
     void solve() {
       string s;cin>>s;
-      //Magic Number
-      bool flag = true;
       for (int i = 0; i < s.length(); i++)
       {
-        if (s[i]='1' && s[i+1]=='4' && s[i+2]=='4')
+        if (s[0]=='4')
         {
-          flag = true;
-        }else if (s[i]='1' && s[i+1]=='4')
+          cout<<"NO"<<endl;
+          return;
+        }
+        if (s[i]=='4' && s[i+1]=='4' && s[i+2]=='4')
         {
-          flag = true;
-        }else if (s[i]=='1')
+          cout<<"NO";
+          return;
+        }else if (s[i]!='1' && s[i]!='4')
         {
-          flag = true;
-        }else{
-          flag = false;
+          cout<<"NO";
+          return;
         }
       }
-      
-      if (flag==false)
-      {
-        cout<<"NO"<<endl;
-        return;
-      }
 
-      
-      cout<<"YES"<<endl;
+      cout<<"YES";
     }
 };
 
