@@ -1,0 +1,1 @@
+{"name":"Local: FairPlayoff","url":"e:\\DSA\\Codeforeces\\TimeComplexity\\FairPlayoff.cpp","tests":[{"id":1781511446884,"input":"4\n3 7 9 5\n4 5 6 9\n5 3 8 1\n6 5 3 2\n","output":"YES\nNO\nYES\nNO\n"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"e:\\DSA\\Codeforeces\\TimeComplexity\\FairPlayoff.cpp","group":"local","local":true}
