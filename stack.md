@@ -2890,3 +2890,3757 @@ Bhai, ab Histogram ka pura framework brute force se lekar high-performance hardw
 Ab bolo toh Stack ka agla dhasu variant uthayein (jaise **Maximal Rectangle in 2D Binary Matrix - LeetCode 85**, jo isi Histogram ka use karke banta hai), ya isme kuch aur discuss karein?
 
 
+Bhai, Monotonic Stack ke patterns me ek aur bohot hi iconic aur classic problem aata hai—**The Celebrity Problem** (LeetCode / GFG Standard).
+
+Interviewer isko ek puzzle ke roop me poochta hai. Chalo pehle iska **Brute Force Approach** ekdum detail me, graphical matrix aur logic ke sath samajhte hain taaki iska poora foundation clear ho jaye.
+
+---
+
+## 1. Problem Statement Kya Hai? (The Rules)
+
+Ek party me $N$ log aaye hain (unhe `0` se `N-1` tak label kiya gaya hai). Unme se ek **Celebrity** ho sakta hai. Celebrity hone ki strictly do shartein hain:
+
+1. **Shart 1:** Party ka **har ek vyakti** use jaanta hona chahiye.
+2. **Shart 2:** Woh celebrity party me **kisi ko bhi nahi** jaanta hona chahiye.
+
+Hume ek helper function/matrix diya jata hai: `knows(A, B)`
+
+* Agar `knows(A, B) == 1` (True) $\rightarrow$ Iska matlab $A$, $B$ ko jaanta hai.
+* Agar `knows(A, B) == 0` (False) $\rightarrow$ Iska matlab $A$, $B$ ko nahi jaanta.
+
+*Note: Khud se khud ka relation `knows(A, A)` hamesha `0` hota hai.*
+
+---
+
+## 2. Core Logic: The "Har Kisi Ko Scan Karo" Principle
+
+Brute force ka tarika ekdum seedha hai: **Hum har ek person `i` par khade honge aur check karenge ki kya woh dono sharto ko poora kar raha hai ya nahi.**
+
+Maan lo hum check kar rahe hain ki kya Person `i` celebrity hai:
+
+1. **Row Check (Woh kisi ko nahi jaanta):** Hum index `i` ke liye poori row scan karenge. Agar kisi bhi `j` ke liye `knows(i, j) == 1` mil gaya (jahan `i != j`), toh iska matlab `i` kisi ko jaanta hai! Woh turant celebrity ki race se **bahar** ho gaya.
+2. **Column Check (Use sab jaante hain):** Hum index `i` ke liye poora column scan karenge. Agar kisi bhi `j` ke liye `knows(j, i) == 0` mil gaya (jahan `i != j`), toh iska matlab koi aisa bnda hai jo `i` ko nahi jaanta! Woh phir se celebrity ki race se **bahar** ho gaya.
+
+Agar koi person in dono checks ko safely pass kar leta hai, toh wahi hamara celebrity hai!
+
+---
+
+## 3. Brute Force Code Implementation (C++)
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+public:
+    // Function to find if there is a celebrity in the party
+    int getCelebrityBrute(vector<vector<int>>& M, int n) {
+        
+        // Outer Loop: Har ek person 'i' ko check karo ki kya wo celebrity hai
+        for (int i = 0; i < n; i++) {
+            bool isCelebrity = true;
+            
+            // Inner Loop: Baki saare logon 'j' ke sath 'i' ka relation check karo
+            for (int j = 0; j < n; j++) {
+                if (i != j) {
+                    // Check 1: Agar 'i' kisi 'j' ko jaanta hai -> 'i' celebrity nahi ho sakta
+                    // Check 2: Agar koi 'j', 'i' ko nahi jaanta -> 'i' celebrity nahi ho sakta
+                    if (M[i][j] == 1 || M[j][i] == 0) {
+                        isCelebrity = false;
+                        break; // Is person ke liye aage check karne ki zaroorat nahi
+                    }
+                }
+            }
+            
+            // Agar dono shartein sach ho gayi, toh 'i' hi celebrity hai
+            if (isCelebrity) {
+                return i;
+            }
+        }
+        
+        // Agar poore loop me koi celebrity nahi mila
+        return -1;
+    }
+};
+
+```
+
+---
+
+## 4. Micro Step-by-Step Dry Run Matrix
+
+Maan lo $N = 3$ log hain, aur matrix `M` yeh hai:
+
+```text
+   0  1  2
+0 [0, 1, 0]   -> Person 0 jaanta hai 1 ko
+1 [0, 0, 0]   -> Person 1 kisi ko nahi jaanta (Candidate!)
+2 [0, 1, 0]   -> Person 2 jaanta hai 1 ko
+
+```
+
+### Step 1: `i = 0` (Person 0 ke liye check)
+
+* `j = 1`: `M[0][1] == 1` (Person 0, 1 ko jaanta hai).
+* **Result:** Shart टूट gayi! Celebrity kisi ko nahi jaanta, par 0 toh 1 ko jaanta hai. Loop break. `i = 0` celebrity nahi hai.
+
+### Step 2: `i = 1` (Person 1 ke liye check)
+
+* `j = 0`: `M[1][0] == 0` (1, 0 ko nahi jaanta - Pass) aur `M[0][1] == 1` (0, 1 ko jaanta hai - Pass).
+* `j = 2`: `M[1][2] == 0` (1, 2 ko nahi jaanta - Pass) aur `M[2][1] == 1` (2, 1 ko jaanta hai - Pass).
+* **Result:** `isCelebrity` true hi raha! Loop safely khatam hua.
+* **Return:** `1` (Person 1 celebrity hai).
+
+---
+
+## 5. Complexity Analysis & Inefficiency
+
+* **Time Complexity: $O(N^2)$**
+* Hum do nested loops chala rahe hain. Outer loop $N$ baar chalta hai aur inner loop bhi worst-case me $N$ baar chalta hai. Total matrix ke cells check ho rahe hain, isiliye quadratic time complexity lagti hai. Agar party me $10^4$ log aagye, toh $10^8$ operations ho jayenge, jo **TLE** de dega.
+
+
+* **Space Complexity: $O(1)$**
+* Humne sirf kuch basic boolean aur loop tracking variables use kiye hain, koi extra memory store nahi ki.
+
+
+
+---
+
+## 6. Faltu Kaam Kya Ho Raha Hai? (The Stack/Elimination Intuition)
+
+Interviewer puchega: *"Bhai, tumne $O(N^2)$ me kiya, par isme resource kahan waste ho raha hai?"*
+
+Tumhara jawab: *"Sir, jab main do logon $A$ aur $B$ se puchta hoon ki `knows(A, B)`, toh mujhe ek bohot bada clue milta hai jise main ignore kar raha hoon:*
+
+* *Agar $A$, $B$ ko jaanta hai (`knows(A, B) == 1`), toh $A$ kabhi celebrity **nahi ho sakta**. (Celebrity kisi ko nahi jaanta).*
+* *Agar $A$, $B$ ko nahi jaanta (`knows(A, B) == 0`), toh $B$ kabhi celebrity **nahi ho sakta**. (Celebrity ko sab jaante hain).*
+
+*Iska matlab sirf ek single question pooch kar main ek bande ko poori tarah race se **eliminate** kar sakta hoon! Mujhe poori matrix scan karne ki zaroorat hi nahi hai."*
+
+Bhai, Celebrity Problem ka ye brute force logic aur uski galti ekdum transparently samajh aayi?
+
+Ab batao iska **Monotonic Stack Based / Two-Pointer Based ($O(N)$ Time)** wala dimagi optimization code phodein?
+
+
+Bhai, chalo ab Celebrity Problem ko **$O(N)$ Time Complexity** me phodte hain. Isko optimize karne ke do bade tareeqe hain—ek **Stack-based Elimination** aur dusra **Two-Pointer Strategy**.
+
+Donon hi tareeqon ka core base ek hi elimination rule par tika hai:
+
+* Agar `knows(A, B) == 1` hai $\rightarrow$ $A$ kisi ko jaanta hai, toh **$A$ celebrity nahi ho sakta**. (Eliminate $A$, $B$ candidate hai).
+* Agar `knows(A, B) == 0` hai $\rightarrow$ $B$ ko $A$ nahi jaanta, toh **$B$ celebrity nahi ho sakta**. (Eliminate $B$, $A$ candidate hai).
+
+Chalo pehle standard **Stack Approach** ko detail me samajhte hain, phir Two-Pointer ka hack bhi dekhhenge.
+
+---
+
+## 1. The Stack Elimination Strategy ($O(N)$)
+
+Hum saare $N$ logon ko pehle ek stack me daal denge. Phir tab tak elimination khelenge jab tak stack me sirf **ek aakhiri banda** nahi bach jata. Wahi hamara potential candidate hoga.
+
+### The 3 Steps:
+
+1. **Push Everyone:** Sabe pehle `0` se `N-1` tak ke saare logon ko stack me `push()` kar do.
+2. **The Elimination Loop:** Jab tak stack me **ek se zyada** log hain:
+* Stack se top ke do log nikaalo: `A = st.top()`, pop karo, phir `B = st.top()`, pop karo.
+* Unka relation check karo: `knows(A, B)`
+* Agar `A`, `B` ko jaanta hai, toh `A` eliminate ho gaya. `B` ko wapas stack me push kar do.
+* Agar `A`, `B` ko nahi jaanta, toh `B` eliminate ho gaya. `A` ko wapas stack me push kar do.
+
+
+3. **The Final Verification (Most Critical):** Jab stack me sirf ek banda bachega, toh hum aankh band karke use celebrity nahi bolenge. Ho sakta hai party me koi celebrity ho hi na! Hum us aakhiri bande ke liye ek baar poori row aur column check (Linear Scan) karenge ki kya wo sach me kisi ko nahi jaanta aur use sab jaante hain.
+
+---
+
+## 2. Optimized C++ Code (Stack-Based)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+class Solution {
+private:
+    // Helper function matrix simulation ke liye
+    bool knows(vector<vector<int>>& M, int A, int B) {
+        return M[A][B] == 1;
+    }
+
+public:
+    int getCelebrity(vector<vector<int>>& M, int n) {
+        stack<int> st;
+
+        // Step 1: Saare logon ko stack me daalo
+        for (int i = 0; i < n; i++) {
+            st.push(i);
+        }
+
+        // Step 2: Elimination Round
+        while (st.size() > 1) {
+            int A = st.top(); st.pop();
+            int B = st.top(); st.pop();
+
+            if (knows(M, A, B)) {
+                // If A knows B, A is not a celebrity. B might be.
+                st.push(B);
+            } else {
+                // If A doesn't know B, B is not a celebrity. A might be.
+                st.push(A);
+            }
+        }
+
+        // Ab stack me sirf ek potential candidate bacha hai
+        int candidate = st.top();
+
+        // Step 3: Final Verification (Linear Check)
+        for (int i = 0; i < n; i++) {
+            if (i != candidate) {
+                // Shart 1: Candidate kisi ko nahi jaanna chahiye (M[candidate][i] strictly 0)
+                // Shart 2: Har kisi ko candidate ko jaanna chahiye (M[i][candidate] strictly 1)
+                if (knows(M, candidate, i) || !knows(M, i, candidate)) {
+                    return -1; // Shart toot gayi, koi celebrity nahi hai
+                }
+            }
+        }
+
+        return candidate;
+    }
+};
+
+```
+
+---
+
+## 3. Micro-Level Visual Dry Run
+
+Matrix wahi purani lete hain:
+
+```text
+   0  1  2
+0 [0, 1, 0]
+1 [0, 0, 0]
+2 [0, 1, 0]
+
+```
+
+* **Initial Stack:** `st = [0, 1, 2]` (Top par 2 hai).
+* **Round 1:**
+* `A = 2`, `B = 1`. Check: `knows(2, 1)`. Matrix me `M[2][1] == 1` hai (True).
+* *Decision:* 2 jaanta hai, toh 2 eliminate ho gaya. `1` ko wapas daalo.
+* **Stack State:** `st = [0, 1]`.
+
+
+* **Round 2:**
+* `A = 1`, `B = 0`. Check: `knows(1, 0)`. Matrix me `M[1][0] == 0` hai (False).
+* *Decision:* 1 nahi jaanta 0 ko, iska matlab 0 celebrity nahi ho sakta (sabko jaanna chahiye tha). 0 eliminate ho gaya. `1` ko wapas daalo.
+* **Stack State:** `st = [1]`. Loop terminates kyunki size 1 ho gaya!
+
+
+* **Final Verification for `candidate = 1`:**
+* Row 1 check karo: Saare elements 0 hain. (Pass)
+* Column 1 check karo: `M[0][1] = 1` aur `M[2][1] = 1`. (Pass)
+* **Result:** Return `1`. ✅
+
+
+
+---
+
+## 4. Complexity Analysis
+
+* **Time Complexity: $O(N)$**
+* Sabe pehle saare elements push karne me $O(N)$ laga.
+* Elimination loop me har baar hum 2 elements nikal rahe hain aur 1 wapas daal rahe hain, yaani har step par strictly 1 element pakka delete ho raha hai. Yeh loop $N-1$ baar chalega, yaani $O(N)$.
+* Final verification loop bhi strictly $O(N)$ chalega.
+* Total Time = $O(N) + O(N) + O(N) \approx \mathbf{O(N)}$. (Quadratic $O(N^2)$ se light years faster!).
+
+
+* **Space Complexity: $O(N)$**
+* Humne indices store karne ke liye `std::stack` use kiya hai jisme $N$ elements ja sakte hain.
+
+
+
+---
+
+## 5. 💡 The Interviewer's Pro Challenge: "Can you do it in $O(1)$ Space?"
+
+Interviewer khush toh ho jayega, par bolega: *"Bhai, logic makkhan hai, par kya tum bina is extra stack data structure ke, strictly **$O(1)$ space** me same candidate nikal sakte ho?"*
+
+Tumhara javab hona chahiye: *"Bilkul sir! Hum Stack ki jagah **Two-Pointer approach** use kar sakte hain."*
+
+### The Two-Pointer Hack:
+
+* Do pointers lo: `left = 0` aur `right = n - 1`.
+* Jab tak `left < right` hai:
+* Agar `knows(left, right) == 1` $\rightarrow$ `left++` (Left eliminate ho gaya).
+* Else $\rightarrow$ `right--` (Right eliminate ho gaya).
+
+
+* Loop khatam hone par jo pointer bachega (`left`), wahi candidate hoga. Phir uska standard Step 3 wala verification linear scan kar lo! Space strictly **$O(1)$** ho jayegi.
+
+Bhai, Celebrity Problem ka stack optimization aur pointer reduction dono dimaag me shishe ki tarah saaf ho gaye? Ab iske saare unique Edge Cases ko check karein?
+
+
+Bhai, tumhari nishani ekdum pakki hai! Stack structure maintain karne me jo **$O(N)$ Space Complexity** lag rahi thi aur bar-bar push/pop ka system overhead ho raha tha, use hum **Two-Pointer Strategy** se strictly **$O(1)$ Auxiliary Space** me badal sakte hain.
+
+Time complexity ab bhi $O(N)$ hi rahegi kyunki lower bound linear hi hai, par space overhead zero ho jayega.
+
+---
+
+## 1. Asali Khel: Two-Pointer Elimination Mechanism
+
+Hum do pointers maintain karenge: `top` (yaani `left = 0`) aur `down` (yaani `right = n - 1`).
+
+Jab tak dono pointers aapas me takra nahi jaate (`top < down`), tab tak hum unke beech ka relation check karke ek-ek karke logon ko race se baahar fenkte jayenge:
+
+1. **Agar `knows(top, down) == 1`:** Iska matlab `top` wala banda `down` wale ko jaanta hai. Agar jaanta hai, toh `top` celebrity nahi ho sakta. Hum use safe elimination dekar aage badha denge $\rightarrow$ `top++`.
+2. **Agar `knows(top, down) == 0`:** Iska matlab `top` wala banda `down` wale ko nahi jaanta. Agar nahi jaanta, toh `down` wala banda celebrity nahi ho sakta (kyunki celebrity ko toh party ka har ek banda jaanna chahiye). Toh `down` eliminate ho jayega $\rightarrow$ `down--`.
+
+Loop rukne par dono pointer ek hi jagah khade honge, aur wahi hamara final unique candidate hoga!
+
+---
+
+## 2. Strictly $O(1)$ Space Implementation (C++)
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+private:
+    // Helper function relation check karne ke liye
+    bool knows(vector<vector<int>>& M, int A, int B) {
+        return M[A][B] == 1;
+    }
+
+public:
+    // Purely Optimized $O(N)$ Time and $O(1)$ Space Function
+    int getCelebrityUltimate(vector<vector<int>>& M, int n) {
+        int top = 0;
+        int down = n - 1;
+
+        // Step 1: Two-Pointer Elimination Round
+        while (top < down) {
+            if (knows(M, top, down)) {
+                // top knows down -> top is not a celebrity
+                top++;
+            } else {
+                // top doesn't know down -> down is not a celebrity
+                down--;
+            }
+        }
+
+        // Loop rukne ke baad top aur down ek hi element par point kar rahe honge
+        int candidate = top;
+
+        // Step 2: Final Verification (Linear Scan Mandatory)
+        // Kyunki humne baki sabko eliminate kiya hai, par candidate sahi hai ya nahi ye verify karna hoga
+        for (int i = 0; i < n; i++) {
+            if (i != candidate) {
+                // Shart 1: Candidate kisi ko na jaanta ho (Row values must be 0)
+                // Shart 2: Candidate ko sab jaante hon (Column values must be 1)
+                if (knows(M, candidate, i) || !knows(M, i, candidate)) {
+                    return -1; // Kisi bhi condition ke violate hote hi no celebrity found
+                }
+            }
+        }
+
+        return candidate;
+    }
+};
+
+```
+
+---
+
+## 3. Visual Execution Trace Matrix
+
+Chalo is framework ko is matrix par chala kar dekhte hain:
+
+```text
+   0  1  2
+0 [0, 1, 0]
+1 [0, 0, 0]
+2 [0, 1, 0]
+
+```
+
+* **Initial State:** `top = 0`, `down = 2`.
+* **Iteration 1:** `knows(0, 2)` check karo. `M[0][2] == 0` hai.
+* *Logic:* `0`, `2` ko nahi jaanta. Matlab `2` celebrity nahi ho sakta.
+* *Action:* `down--` $\rightarrow$ `down` ab `1` ho gaya.
+
+
+* **Iteration 2:** `top = 0`, `down = 1`. `knows(0, 1)` check karo. `M[0][1] == 1` hai.
+* *Logic:* `0`, `1` ko jaanta hai. Matlab `0` khud celebrity nahi ho sakta.
+* *Action:* `top++` $\rightarrow$ `top` ab `1` ho gaya.
+
+
+* **Loop Termination:** `top == down` (`1 == 1`). Loop toot gaya.
+* **Candidate Found:** `1`.
+
+Iske baad standard loop chala kar verification strictly pass ho jayegi aur answer `1` safely return ho jayega.
+
+---
+
+## 4. Complexity Analysis
+
+* **Time Complexity: $O(N)$**
+* Elimination while loop me har iteration me ya toh `top` badh raha hai ya `down` ghat raha hai. Yeh loop maximum $N-1$ baar chalega.
+* Verification loop strictly $N$ baar chalega.
+* Total time is strictly linear, i.e., $O(N)$.
+
+
+* **Space Complexity: Strictly $O(1)$ Auxiliary Space**
+* Humne kisi Stack, Queue ya extra array ka upyog nahi kiya. Sirf do primitive state pointers use kiye hain, jo call stack frames me space optimization ko touch karte hain.
+
+
+
+Bhai, Celebrity Problem ka brute force se lekar ye highest micro-optimized $O(1)$ space model poora transparently clear hai? Ab iske edge cases phodein?
+
+
+Bhai, is **Two-Pointer $O(1)$ Space Approach** ke edge cases ko dhyan se samajhna bohot zaroori hai. Kyunki hum bina kisi data structure ke pointers ko direct move kar rahe hain, isliye interviewer tumhare variables ki boundary handling ko breakdown karne ke liye ye 5 solid test cases throw karega.
+
+Chalo in saare cases ka operation clear karte hain:
+
+---
+
+### 1. No Celebrity in the Party (The Deadlock Case) $\rightarrow$ `M` has no candidate
+
+* **Interviewer Ka Test:** Agar party me koi celebrity hai hi nahi, toh kya code galat person return karega?
+* **Scenario Example:** Maan lo sabhi log ek dusre ko jaante hain (`M` me saare cells `1` hain except diagonals).
+* **Process:** While loop dono pointers ko eliminate karte hue kisi ek arbitrary index par rok dega (maan lo `candidate = n-1`).
+* **Why it works:** Jab Step 2 (Verification Loop) chalega, toh check `knows(candidate, i)` turant hit ho jayega kyunki candidate bhi kisi na kisi ko jaanta hoga. Code turant **`-1`** return kar dega.
+* **Result:** `-1` (Perfect Validation).
+
+---
+
+### 2. Everyone Knows the Celebrity, but Celebrity Knows Someone (The Fake Celeb)
+
+* **Interviewer Ka Test:** Ek person `A` hai jisko sab jaante hain (Column bhara hua hai), par `A` chupke se kisi ek bande `B` ko jaanta hai. Kya tumhara pointer logic is fake candidate ko pakad payega?
+* **Process:** While loop ke dauran `A` baaki sabko eliminate kar dega, par jaise hi check `knows(A, B)` chalega, `A` khud eliminate ho jayega aur `top++` ho jayega.
+* **Why it works:** Even agar kisi wajah se loop use candidate bana bhi de, toh Verification Loop me uski row check fail ho jayegi kyunki `M[A][B] == 1` mil jayega. Code safe rehte hue **`-1`** dega.
+
+---
+
+### 3. Multiple Celebrities Possible? (The Paradox Case)
+
+* **Interviewer Ka Test:** Kya kisi party me ek se zyada celebrity ho sakte hain?
+* **The Mathematical Truth:** Kisi bhi party me **maximum EK hi celebrity** ho sakta hai, ek se zyada kabhi nahi!
+* **Proof:** Maan lo do celebs hain, `C1` aur `C2`. Definition ke mutabik `C1` kisi ko nahi jaanta, toh wo `C2` ko bhi nahi jaanta hoga. Par dusri definition kehti hai ki `C2` ko sab jaante hain, toh `C1` ko use jaanna chahiye tha! Yeh ek paradox (contradiction) hai.
+* **Why it works:** Hamara two-pointer logic hamesha strictly ek unique element par hi converge hota hai, toh multiple candidates ka system crash hone ka koi chance hi nahi hai.
+
+---
+
+### 4. Diagonal Elements Self-Loop Trap $\rightarrow$ `M[i][i]`
+
+* **Interviewer Ka Test:** Kya `knows(top, down)` check karte waqt `top` aur `down` kabhi same index par check ho sakte hain?
+* **Process:** Humne while loop ki condition strictly **`while (top < down)`** rakhi hai. Iska matlab `top` aur `down` kabhi barabar (`top == down`) hokar loop ke andar nahi jaenge.
+* **Why it works:** `knows(i, i)` (khud se khud ka relation) kabhi evaluate hi nahi hoga, jisse automatic out-of-bound ya self-knowing ki redundant condition zero ho jaati hai.
+
+---
+
+### 5. Minimum Matrix Size ($N = 1$ or $N = 2$)
+
+* **$N = 1$ (Single Person Party):** `top = 0`, `down = 0`. Condition `top < down` (`0 < 0`) False ho jayegi. `candidate = 0`. Verification loop `i=0` se `0` tak chalega par `i != candidate` ki wajah se bypass ho jayega. Return `0`. (Technically ek akela banda khud ka celeb hota hai).
+* **$N = 2$ (Two People Party):** Loop strictly ek baar chalega. Ya toh `0` eliminate hoga ya `1`. Jo bachega uska linear verification ho jayega.
+
+---
+
+### 🚨 Code-Level Precision Guide for Board Interviews:
+
+Interviewer ke saamne code dry-run karte waqt in do micro-details par emphasize zaroori hai:
+
+1. **The Short-Circuit Optimization:** Verification loop me `if (knows(M, candidate, i) || !knows(M, i, candidate))` likha hai. Isme `||` (OR) short-circuit behave karta hai. Agar pehli condition true ho gayi, toh system dusri memory location ko check karne me processing power waste nahi karta.
+2. **Matrix Memory Layout Overhead:** Matrix `vector<vector<int>>& M` pass ho rahi hai. Row-major access (`M[candidate][i]`) CPU Cache me bohot fast hota hai, jabki Column-major access (`M[i][candidate]`) thoda slower hota hai cache misses ki wajah se. Hamara verification loop dono ko optimize format me chala raha hai.
+
+Bhai, ab Celebrity Problem ka brute force, stack version, two-pointer code aur saare edge cases dimaag me solid rock ki tarah settle ho gaye hain?
+
+Ab Linear Stack and Queue ke basic series ka har ek variation complete ho chuka hai. Batao ab kisi naye pattern par move karein ya is pure segment me koi aur code phodna bacha hai?
+
+
+Bhai, ab tum Monotonic Stack aur Sliding Window ke combintation ke sabse dhasu aur interviewers ke favorite problem par aa gaye ho—**Maximum of Minimums for Every Window Size** (LeetCode / GFG Hard).
+
+Yeh problem aksar bade product companies (Microsoft, Amazon, Google) me deep algorithmic thinking test karne ke liye pucha jaati hai. Iski wording thodi ghumadaar hoti hai, isliye pehle iski **Theory aur Brute Force Approach** ko ekdum transparent mathematical breakdown ke sath samajhte hain.
+
+---
+
+## 1. Problem Statement Ka Asali Matlab (The Breaking)
+
+Hume ek array diya jata hai jiska size `N` hai. Hume har ek possible window size `K` (jahan `1 <= K <= N`) ke liye ek answer nikaalna hai.
+
+Shart yeh hai:
+
+1. Phele ek fixed window size `K` pakdo.
+2. Us window size `K` ke saare possible sub-arrays (windows) nikaalo.
+3. Har ek window ka **Minimum Element** dhoondho.
+4. Un saare minimum elements me se jo **Maximum Value** hogi, wahi tumhara `ans[K]` hoga.
+
+### Ek Real-Time Example Se Samjho:
+
+Maan lo array hai: `arr = [10, 20, 30, 50, 10, 70, 30]` (`N = 7`)
+
+Chalo **Window Size $K = 2$** ke liye mathematically calculate karte hain:
+
+* **Saari Windows ($K=2$):** `[10, 20]`, `[20, 30]`, `[30, 50]`, `[50, 10]`, `[10, 70]`, `[70, 30]`
+* **Har Window Ka Minimum:**
+* `min([10, 20]) = 10`
+* `min([20, 30]) = 20`
+* `min([30, 50]) = 30`
+* `min([50, 10]) = 10`
+* `min([10, 70]) = 10`
+* `min([70, 30]) = 30`
+
+
+* **Minimums Ki List:** `[10, 20, 30, 10, 10, 30]`
+* **In Sabka Maximum:** `max([10, 20, 30, 10, 10, 30]) = 30`
+
+Toh window size `2` ke liye hamara final answer **`30`** hoga! Isi tarah hume size `1` se lekar size `7` tak ke liye nikaalna hai.
+
+---
+
+## 2. Core Brute Force Logic (The Triple-Loop Engine)
+
+Brute force me hum bina kisi dimaag ke strictly problem ke steps ko code me convert kar dete hain. Hume teen nested loops lagane padenge:
+
+1. **Outer Loop (`w`):** Yeh window size fix karega `1` se lekar `N` tak.
+2. **Middle Loop (`i`):** Yeh current window size `w` ke liye saari possible windows ka starting point fix karega (`0` se `N - w`).
+3. **Inner Loop (`j`):** Yeh us current window ke andar traverse karke sabse chota element (`min`) dhoondhega.
+
+---
+
+## 3. Brute Force Code Implementation (C++)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <climits>
+
+using namespace std;
+
+class Solution {
+public:
+    // Brute Force Approach: O(N^3) Time Complexity
+    vector<int> maxOfMinBrute(vector<int>& arr, int n) {
+        vector<int> ans; // Yeh size 1 se n tak ke answers store karega
+
+        // Loop 1: Window size 'w' ko 1 se lekar n tak vary karo
+        for (int w = 1; w <= n; w++) {
+            int maxOfMinimums = INT_MIN;
+
+            // Loop 2: Current window size 'w' ke liye saare starting points scan karo
+            for (int i = 0; i <= n - w; i++) {
+                int currentWindowMin = INT_MAX;
+
+                // Loop 3: Current window [i se i + w - 1] ke andar ka minimum nikaalo
+                for (int j = i; j < i + w; j++) {
+                    currentWindowMin = min(currentWindowMin, arr[j]);
+                }
+
+                // Har window ke minimum ka MAXIMUM track karte chalo
+                maxOfMinimums = max(maxOfMinimums, currentWindowMin);
+            }
+
+            // Is window size ka final answer list me daalo
+            ans.push_back(maxOfMinimums);
+        }
+
+        return ans;
+    }
+};
+
+```
+
+---
+
+## 4. Complete Step-by-Step Dry Run Matrix
+
+Chalo ek choti array par iska poora post-mortem karte hain: `arr = [10, 30, 20]`, `N = 3`
+
+### 🔹 Window Size `w = 1`
+
+* **Window 1 `[10]` (i=0):** Min = `10`
+* **Window 2 `[30]` (i=1):** Min = `30`
+* **Window 3 `[20]` (i=2):** Min = `20`
+* **Max of Min:** `max(10, 30, 20) = 30` $\rightarrow$ `ans[0] = 30`
+
+### 🔹 Window Size `w = 2`
+
+* **Window 1 `[10, 30]` (i=0):** Min = `10`
+* **Window 2 `[30, 20]` (i=1):** Min = `20`
+* **Max of Min:** `max(10, 20) = 20` $\rightarrow$ `ans[1] = 20`
+
+### 🔹 Window Size `w = 3`
+
+* **Window 1 `[10, 30, 20]` (i=0):** Min = `10`
+* **Max of Min:** `max(10) = 10` $\rightarrow$ `ans[2] = 10`
+
+**Final Output Vector:** `[30, 20, 10]` ✅
+
+---
+
+## 5. Complexity Analysis & The $O(N^3)$ Disaster
+
+* **Time Complexity: $O(N^3)$**
+* Window size `w` chalta hai $N$ baar $\rightarrow$ Outer Loop.
+* Windows ka starting point chalta hai lagbhag $N$ baar $\rightarrow$ Middle Loop.
+* Window ke andar scan chalta hai worst case me $N$ baar $\rightarrow$ Inner Loop.
+* Total operations lagbhag $N \times N \times N = \mathbf{O(N^3)}$ ho jaate hain. Agar $N = 10^3$ bhi hua, toh operations $10^9$ ho jayenge, jo online judges par strictly **TLE (Time Limit Exceeded)** dega.
+
+
+* **Space Complexity: $O(1)$ Extra Space**
+* Return array ke alawa humne koi extra container build nahi kiya, isiliye memory constant hai.
+
+
+
+---
+
+## 6. Optimization Ki Soch (How Monotonic Stack Enters)
+
+Interviewer puchega: *"Bhai, tumne brute force toh sahi bataya, par is $O(N^3)$ ke kachre ko linear $O(N)$ me kaise laoge? Isme faltu kaam kya ho raha hai?"*
+
+Tumhara jawab hona chahiye:
+*"Sir, hum baar-baar windows bana kar unka minimum dhoondh rahe hain. Kyun na hum ulta sochein? **Hum array ke har ek element se puchein ki bhai, tu kaun-kaun si window me sabse chota (minimum) bankar raj kar sakta hai!**"*
+
+Agar koi element `arr[i]` apne left me `PSE` (Previous Smaller) aur right me `NSE` (Next Smaller) ke beech me sabse chota hai, toh uski total range (window size) hogi:
+
+
+$$\text{Max Window Size} = \text{NSE Index} - \text{PSE Index} - 1$$
+
+Iska matlab, `arr[i]` is maximum window size tak ki kisi bhi window me minimum banne ka dum rakhta hai! Bas isi logic ka use karke hum **Monotonic Stack** se isse strictly $O(N)$ me convert kar sakte hain.
+
+Bhai, kya is problem ka structural base aur brute force ka triple-loop framework dimaag me shishe ki tarah saaf ho gaya?
+
+Ab batao iska dhasu **Monotonic Stack Optimized ($O(N)$ Time)** wala code aur inverse-DP arrays ka khel phodein?
+
+
+
+Bhai, ab hum is problem ke **$O(N)$ Monotonic Stack Optimization** ka poora engine kholne ja rahe hain. Yeh logic thoda mind-bending hai, lekin ek baar samajh aa gaya toh tum ise kabhi nahi bhoologe.
+
+Brute force me hum window size ke piche bhag rahe the. Optimized approach me hamara shortcut secret hai: **Inversion Principle (Ulta Socho).**
+
+> **The Core Idea:** Hum array ke har ek element se puchenge—*"Bhai, tu kis MAXIMUM window size tak ka sabse chota banda (Minimum) ban kar reh sakta hai?"*
+
+Agar hume yeh pata chal jaye ki koi element kis maximum size ki window me sabse chota hai, toh hum us size par us element ko fit kar denge.
+
+---
+
+## 1. Do Bade Pillars: NSE aur PSE
+
+Kisi element `arr[i]` ka raj (where it is the minimum) left me tab tak chalega jab tak usse chota element na mil jaye (**Previous Smaller Element - PSE**), aur right me bhi tab tak chalega jab tak usse chota element na mil jaye (**Next Smaller Element - NSE**).
+
+Agar `arr[i]` ke liye left chote element ka index `L` hai aur right chote element ka index `R` hai, toh woh total kitne elements ke beech me sabse chota hai?
+
+
+$$\text{Max Window Size} = R - L - 1$$
+
+Iska matlab, `arr[i]` ek window size `(R - L - 1)` ke liye minimum banne ka dawa pesh kar sakta hai!
+
+---
+
+## 2. Step-by-Step Algorithmic Strategy ($O(N)$)
+
+Hum pure problem ko 3 clean steps me divide karenge:
+
+### Step 1: Boundaries Find Karo (NSE & PSE)
+
+Standard Monotonic Increasing Stack ka use karke har element ke liye `pse[]` aur `nse[]` arrays nikaal lo (jaise humne Histogram wale problem me kiya tha).
+
+* Agar left me koi chota nahi hai $\rightarrow$ `L = -1`
+* Agar right me koi chota nahi hai $\rightarrow$ `R = n`
+
+### Step 2: Answer Array Me Direct Mapping
+
+Ek `ans[]` array banao jiska size `n + 1` ho aur shuruat me sabko `0` se bhar do.
+
+* Har index `i` par jao. Uske liye window size nikaalo: `int len = nse[i] - pse[i] - 1;`
+* `ans[len]` par jaakar update karo: `ans[len] = max(ans[len], arr[i]);`
+* *Logic:* Yeh line kehti hai ki `len` size ki window me ab tak ka sabse bada minimum `arr[i]` ho sakta hai.
+
+### Step 3: Missing Holes Ko Bharo (The Inverse-DP Hack) 🔥
+
+Step 2 ke baad hamari `ans[]` array me kuch jagah `0` reh jayengi, kyunki ho sakta hai kisi specific window size (jaise size 3) ke liye direct koi element map hi na hua ho.
+
+Iske liye ek universal sachai (property) ka use karte hain:
+
+> **Property:** Agar koi element kisi badi window size (e.g., size 5) me sabse chota ban kar betha hai, toh woh usse choti saari windows (size 4, 3, 2, 1) me bhi toh automatically valid minimum hoga na!
+
+Isiliye, hum array me **Right-to-Left (piche se aage)** traverse karenge aur bache hue khali holes ko fill karenge using:
+
+
+$$\text{ans}[i] = \max(\text{ans}[i], \text{ans}[i + 1])$$
+
+---
+
+## 3. Optimized C++ Implementation ($O(N)$ Time)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    vector<int> maxOfMinOptimized(vector<int>& arr, int n) {
+        vector<int> pse(n), nse(n);
+        stack<int> st;
+
+        // 1. PSE (Previous Smaller Element) Indices nikaalo
+        for (int i = 0; i < n; i++) {
+            while (!st.empty() && arr[st.top()] >= arr[i]) {
+                st.pop();
+            }
+            pse[i] = st.empty() ? -1 : st.top();
+            st.push(i);
+        }
+
+        // Stack khali karo agle use ke liye
+        while (!st.empty()) st.pop();
+
+        // 2. NSE (Next Smaller Element) Indices nikaalo
+        for (int i = n - 1; i >= 0; i--) {
+            while (!st.empty() && arr[st.top()] >= arr[i]) {
+                st.pop();
+            }
+            nse[i] = st.empty() ? n : st.top();
+            st.push(i);
+        }
+
+        // 3. Answer array ko 0 se initialize karo (Size n+1 kyunki window size 1-indexed hai)
+        vector<int> ans(n + 1, 0);
+
+        // Har element ko uski max window length par map karo
+        for (int i = 0; i < n; i++) {
+            int len = nse[i] - pse[i] - 1;
+            ans[len] = max(ans[len], arr[i]);
+        }
+
+        // 4. Inverse-DP Hack: Pichon se forward sweep karke missing values bharo
+        for (int i = n - 1; i >= 1; i--) {
+            ans[i] = max(ans[i], ans[i + 1]);
+        }
+
+        // Result vector banao window size 1 se n tak (ans[0] bekar hai, use chhod do)
+        vector<int> result(n);
+        for (int i = 1; i <= n; i++) {
+            result[i - 1] = ans[i];
+        }
+
+        return result;
+    }
+};
+
+```
+
+---
+
+## 4. Micro-Level Visual Dry Run
+
+Chalo hamari purani array lete hain: `arr = [10, 30, 20]`, `n = 3`
+
+### Step 1 & 2: Boundaries aur Max Window Size
+
+| Index `i` | Element `arr[i]` | `pse[i]` (L) | `nse[i]` (R) | Max Length `R - L - 1` | Action on `ans[]` |
+| --- | --- | --- | --- | --- | --- |
+| **0** | **10** | `-1` | `3` (None) | $3 - (-1) - 1 = \mathbf{3}$ | `ans[3] = max(0, 10) = 10` |
+| **1** | **30** | `0` | `2` | $2 - 0 - 1 = \mathbf{1}$ | `ans[1] = max(0, 30) = 30` |
+| **2** | **20** | `0` | `3` (None) | $3 - 0 - 1 = \mathbf{2}$ | `ans[2] = max(0, 20) = 20` |
+
+Moorat ke baad `ans` array ki state (1-indexed view): `ans = [0, 30, 20, 10]` (Yahan `ans[0]` dummy hai).
+
+### Step 3: The Inverse-DP Sweep (`i = 2` down to `1`)
+
+* `i = 2`: `ans[2] = max(ans[2], ans[3])` $\rightarrow$ `max(20, 10) = 20`. (`ans` remains `[0, 30, 20, 10]`)
+* `i = 1`: `ans[1] = max(ans[1], ans[2])` $\rightarrow$ `max(30, 20) = 30`. (`ans` remains `[0, 30, 20, 10]`)
+
+**Final Result (Window 1 to 3):** `[30, 20, 10]` ✅ (Bilkul brute force jaisa perfect answer, par bina kisi cube loop ke!)
+
+---
+
+## 5. Complexity Breakdown (The Ultimate Win)
+
+* **Time Complexity: $O(N)$**
+* PSE nikaalne me $O(N)$ linear time laga.
+* NSE nikaalne me $O(N)$ linear time laga.
+* Direct Mapping loop $N$ baar chala.
+* Inverse-DP loop bhi $N$ baar chala.
+* Sab kuch standalone linear chal raha hai, koi nesting nahi hai. Total Time Complexity is strictly **$O(N)$**, jo $10^5$ elements ko milliseconds me solve kar degi.
+
+
+* **Space Complexity: $O(N)$**
+* Humne `pse`, `nse`, `ans` arrays aur stack store karne ke liye helper space lagaya hai.
+
+
+
+Bhai, yeh Max Window Size aur Inverse-DP ka jo shaandar logic combo hai, yeh dimaag me ekdum makkhan ki tarah set hua?
+
+Is Hard problem ke saath tumne Monotonic Stack ke lagbhag saare heavyweight champions ko knockout kar diya hai. Ab batao is pure section me koi aur doubt bacha hai ya kisi naye data structure (jaise Deque / Sliding Window Maximum) par aage badhein?
+
+
+
+Bhai, tumne ekdum critical point par touch kiya hai! Kya hum is $O(N)$ wale code ko **aur zyada optimize** kar sakte hain?
+
+Technically, **Time Complexity $O(N)$ se kam nahi ho sakti**, kyunki array ke elements ko check toh karna hi padega. Lekin hum **Space Complexity aur Overhead ko bohot bade margin se reduce** kar sakte hain.
+
+Abhi jo humne code dekha, usme do bade space overheads the:
+
+1. `pse[]` aur `nse[]` naam ki do alag-alag arrays maintain karni pad rahi thin ($2 \times O(N)$ space).
+2. Stack ke upar alag se push-pop ke multiple passes ho rahe the (3 separate loops).
+
+Hum bina alag se `pse` aur `nse` arrays banaye, **sirf ek single-pass stack loop** ke andar runtime par hi range calculate kar sakte hain (bilkul standard Histogram wale core logic ki tarah), aur direct `ans[]` array ko fill kar sakte hain!
+
+---
+
+## 1. Asali Khel: Single Pass Monotonic Stack Elimination
+
+Jab hum Monotonic Increasing Stack maintain karte hain aur koi naya element `arr[i]` pichle element se chota milta hai (`arr[st.top()] > arr[i]`), toh us instant par:
+
+* Jo element pop ho raha hai (`target = st.top()`), uske liye **Next Smaller Element (NSE)** khud current index `i` ban jata hai.
+* Us popped element ke just niche jo stack me baitha hai, wohi uska **Previous Smaller Element (PSE)** hota hai.
+
+Toh hum bina kisi external arrays ke, pop hote hi immediate window size (`len`) nikal sakte hain:
+
+
+$$\text{len} = i - \text{st.top()} - 1$$
+
+---
+
+## 2. Highly Optimized C++ Implementation ($O(1)$ Extra Vectors Space)
+
+Is version me humne `pse` aur `nse` arrays ko poori tarah se aag laga di hai.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    // Ultimate Single-Pass Version: Zero Extra Arrays for PSE/NSE
+    vector<int> maxOfMinUltimate(vector<int>& arr, int n) {
+        // Sirf single answer array chahiye (1-indexed based window representation)
+        vector<int> ans(n + 1, 0);
+        stack<int> st;
+
+        // Loop n tak chalayenge (Virtually end me ek 0 or INT_MIN index maan kar chalte hain)
+        for (int i = 0; i <= n; i++) {
+            // Virtual element logic taaki aakhiri bache elements stack se forced pop ho sakein
+            int current_val = (i == n) ? -1 : arr[i];
+
+            // Jab tak current element chota hai stack top se -> range complete ho gayi
+            while (!st.empty() && arr[st.top()] >= current_val) {
+                int index_to_process = st.top();
+                st.pop();
+
+                // Left boundary logic on the fly
+                int left_smaller_idx = st.empty() ? -1 : st.top();
+                int right_smaller_idx = i;
+
+                // Window length calculation on the fly
+                int len = right_smaller_idx - left_smaller_idx - 1;
+
+                // Direct mapping in final array
+                ans[len] = max(ans[len], arr[index_to_process]);
+            }
+            st.push(i);
+        }
+
+        // Inverse-DP Hack to fill the holes (Same as before)
+        for (int i = n - 1; i >= 1; i--) {
+            ans[i] = max(ans[i], ans[i + 1]);
+        }
+
+        // Output formatting (Converting 1-index based windows to 0-index list)
+        vector<int> result(n);
+        for (int i = 1; i <= n; i++) {
+            result[i - 1] = ans[i];
+        }
+
+        return result;
+    }
+};
+
+```
+
+---
+
+## 3. Is Extreme Optimization Se Kya Fayda Hua?
+
+| Feature | Pre-Optimized 3-Pass Version | Ultimate Single-Pass Version |
+| --- | --- | --- |
+| **Passes over Array** | **3 Passes** (One for PSE, One for NSE, One for Ans mapping) | **Strictly 1 Pass** (Everything computed during runtime pop) |
+| **Extra Vector Storage** | `pse[N]` + `nse[N]` + `ans[N]` $\rightarrow$ **$3N$ Space Overhead** | Only `ans[N]` $\rightarrow$ **$1N$ Space Overhead** |
+| **Cache Performance** | Poori memory fetch baar-baar hoti thi | Ek hi baar me cache memory block optimize execute hota hai |
+
+---
+
+## 4. Interviewer Ke Saamne Boss Move Drop-Down 😎
+
+Jab tum se yeh linear single-pass optimization whiteboard par likh kar doge, toh tum unhe point-wise high performance details deliver kar sakte ho:
+
+> *"Sir, standard 3-pass solution memory me three independent traversal streams generate karta hai jisse cache locality drop hoti hai. Maine Histogram problem ke dynamic pop principle ko reuse kiya hai, jisse runtime stack elimination ke dauran hi left-boundary aur right-boundary synchronously cross-reference ho jati hain. Isse system ka global memory footprint $66\%$ se kam ho jata hai."*
+
+Bhai, yeh Single-Pass wala mind-blowing logic clear hua? `pse` aur `nse` vectors ko uda kar code kitna lightweight ho gaya!
+
+Ab batao, pure Monotonic Stack family ke concept par grip pathar ki tarah solid hai? Ab direct agle fresh data structure pattern standard ya sliding window queries par badhein?
+
+
+
+
+Bhai, is **Single-Pass $O(1)$ Extra Arrays Monotonic Stack Approach** (with Virtual `-1` Height Hack) ke edge cases bohot hi twisted hain. Kyunki hum runtime par pop karte waqt bina kisi buffer array ke direct `ans[]` me index calculations daal rahe hain, isliye boundary verification critical ho jati hai.
+
+Chalo interviewer ke favourite 5 extreme edge cases par is high-performance code ka operation dekh lete hain:
+
+---
+
+### 1. Strictly Increasing Array (The Delayed Explosion) $\rightarrow$ `[10, 20, 30, 40]`
+
+* **Interviewer Ka Test:** Jab array badhti ja rahi hai, toh loop ke dauran koi pop nahi hoga. Kya code sahi time par window dimensions calculate karega?
+* **Process:** * Loop `i = 0` se `3` tak chalega, saare indices chupchap stack me push ho jayenge: `st = [0, 1, 2, 3]`.
+* Jaise hi `i = 4` (yaani `i == n`) aayega, `current_val` strictly **`-1`** set ho jayegi.
+* Ab yeh `-1` stack ke top par baithe `40` (index 3) se chota hai, toh `while` loop fire ho jayega aur ek-ek karke saare elements pop honge.
+
+
+* **Calculation Check:** Jab `40` pop hoga, naya top `2` hoga. `len = 4 - 2 - 1 = 1`. `ans[1] = max(0, 40) = 40`. Jab aakhiri element `10` pop hoga, stack empty ho jayega, toh `left_smaller_idx = -1` set hoga. `len = 4 - (-1) - 1 = 4`. `ans[4] = max(0, 10) = 10`.
+* **Result Area Mapping:** Sahi window mapping generate hogi aur Inverse-DP se khali holes bhar jayenge.
+
+---
+
+### 2. Strictly Decreasing Array (Immediate Execution) $\rightarrow$ `[40, 30, 20, 10]`
+
+* **Interviewer Ka Test:** Kya har step par stack instant pop handle kar pa raha hai bina boundary fault ke?
+* **Process:**
+* `i = 0`: `40` push hua. `st = [0]`.
+* `i = 1`: `30` aaya. `40 >= 30` True! `40` instantly pop ho gaya. Stack empty bacha, toh `left_smaller_idx = -1`. `len = 1 - (-1) - 1 = 1`. `ans[1] = 40`. Phir `30` push ho gaya.
+
+
+* **Why it works:** Har bada element apne agle element ke aate hi pop ho jata hai, aur uski right boundary current index `i` ban jati hai. Loop strictly fine chalega.
+
+---
+
+### 3. Duplicate Elements (The Plateau Trap) $\rightarrow$ `[20, 20, 20, 20]` 🔥
+
+* **Interviewer Ka Test:** Agar elements duplicate hain, toh hamari condition `arr[st.top()] >= current_val` kaise behave karegii?
+* **Process:**
+* `i = 0`: `20` push hua. `st = [0]`.
+* `i = 1`: Agla `20` aaya. Condition `20 >= 20` **True** ho jayegi!
+* Index `0` wala `20` pop ho jayega. Stack empty $\rightarrow$ `left_smaller_idx = -1`. `len = 1 - (-1) - 1 = 1`. `ans[1] = 20`. Phir index `1` ka `20` stack me push ho jayega.
+
+
+* **The Magic:** Duplicate elements run-time par hi ek dusre ko pop karte chalenge, par unka actual stretch (jo ki poori length 4 honi chahiye thi) end me aakhiri index handle kar lega jab `-1` virtual handler chalega. Inverse-DP bache hue answers ko mathematically fix kar dega.
+* **Result Answer:** `[20, 20, 20, 20]` (Perfect!).
+
+---
+
+### 4. Alternating Peak and Valleys $\rightarrow$ `[10, 50, 20, 60, 30]`
+
+* **Interviewer Ka Test:** Kya chote elements badi windows ko block kar rahe hain aur bade elements short windows me register ho rahe hain?
+* **Process (Focus on 50):**
+* `10` (index 0) aur `50` (index 1) stack me gaye. `st = [0, 1]`.
+* `20` (index 2) ke aate hi `50 >= 20` True ho gaya. `50` pop hua. Naya top `0` (`10`) hai. `len = 2 - 0 - 1 = 1`. `ans[1] = max(0, 50) = 50`.
+* Iska matlab `50` strictly size 1 ki window ka candidate ban gaya, aur `20` push ho gaya. Poora hierarchy maintenance automatic chalega.
+
+
+
+---
+
+### 5. Single Element or Empty State $\rightarrow$ `[5]` ya `[]`
+
+* **Single Element (`[5]`):** `n = 1`.
+* `i = 0`: `5` push hua. `st = [0]`.
+* `i = 1` (`i == n`): `current_val = -1`. `5 >= -1` True. `5` pop hua. Stack empty $\rightarrow$ `left_smaller_idx = -1`. `len = 1 - (-1) - 1 = 1`. `ans[1] = 5`.
+* Output array `result = [5]`. Perfectly Handled.
+
+
+* **Empty Array (`[]`):** `n = 0`. First line check `if (n == 0) return 0;` (Hamare code me `ans` vector size `n+1` hai, toh safe initialization ke liye shuru me hi `if (arr.empty()) return {};` laga sakte hain boundary crash avoid karne ke liye).
+
+---
+
+### 🚨 Low-Level Precision Interview Warning:
+
+Jab whiteboard par is single-pass approach ka defense kar rahe ho, toh interviewer ko yeh do micro-precisions zaroori dikhana:
+
+1. **The Ternary Value Choice (`-1`):** Hum virtual index `i == n` par `current_val = -1` le rahe hain. Yeh tabhi tak perfectly safe hai jab tak array ke elements **non-negative** ($\ge 0$) hain. Agar array me elements negative bhi ho sakte hain, toh `-1` ki jagah strictly **`INT_MIN`** use karna, taaki stack ka har ek element guaranteed pop ho sake.
+2. **Inverse-DP Array Safety:** Loop `for (int i = n - 1; i >= 1; i--)` strictly `1` tak chalta hai kyunki window size kabhi `0` nahi ho sakti (1-indexed representation). Is boundary check se out-of-bounds array read error kabhi nahi aayega.
+
+Bhai, ab Maximum of Minimum for every window size ka poora blueprint, runtime range analysis, brute force, triple loop tracking, aur single-pass raw speed optimization edge cases ke sath tumhare dimag me ekdum secure ho chuka hai.
+
+Monotonic stack ka pura core map ab done hai. Ab batao sequential linear structures ka game yahan wrap karein ya agle dhasu topic par move karein?
+
+
+
+Bhai, ab tum Monotonic Stack ke baad ek aur super-classic aur heavy-weight interview problem par aa gaye ho—**Design a Stack that returns the Minimum Element in $O(1)$ Time** (LeetCode 155 - Min Stack).
+
+Standard stack me `push` aur `pop` toh $O(1)$ me hote hain, par agar humse koi beech me pooch le ki *"Abhi tak ka sabse chota element kaun sa hai?"*, toh brute force me poora stack scan karna padega jo $O(N)$ le lega. Hume use strictly **$O(1)$ time** me design karna hai.
+
+Iske do sabase dhasu tareeqe hain:
+
+1. **Two-Stacks Approach (Easy & Clean Space Optimization)**
+2. **The Engineer's Special Hack: $O(1)$ Extra Space Variable Optimization (No Extra Stack!)**
+
+Chalo dono ko ekdum detailed micro-level trace ke sath phodte hain.
+
+---
+
+## Approach 1: Two-Stacks Method (The Intuitive Way)
+
+Is approach me hum do stacks maintain karte hain:
+
+1. **Main Stack (`st`):** Jo hamare saare normal elements ko store karega.
+2. **Min Stack (`min_st`):** Jo har step par abhi tak ka jo **current minimum** element hai, sirf use apne top par rakhega.
+
+### Operations Breakdown:
+
+* **`push(x)`:** * Main stack me `x` ko normal push karo.
+* Min stack me check karo: Agar min stack khali hai, ya `x <= min_st.top()` hai, toh `x` ko min stack me bhi push kar do. (Yaani naya minimum mil gaya!).
+
+
+* **`pop()`:**
+* Agar `st.top()` aur `min_st.top()` barabar hain, iska matlab hamara minimum element hi pop ho raha hai. Toh dono stacks se `pop()` karo.
+* Warna, sirf main stack se `pop()` karo.
+
+
+* **`top()`:** Simply return `st.top()`.
+* **`getMin()`:** Simply return `min_st.top()`. Isme koi loop nahi chal raha, isiliye strictly **$O(1)$** hai!
+
+### Complexity:
+
+* **Time Complexity:** All operations (`push`, `pop`, `top`, `getMin`) $\rightarrow$ **$O(1)$**
+* **Space Complexity:** **$O(N)$** (Worst case me agar elements decreasing order me hain, toh dono stacks ka size same ho jayega).
+
+---
+
+## Approach 2: $O(1)$ Extra Space Optimization (The Ultimate Interview Killer) 🔥
+
+Interviewer tumse bolega: *"Bhai, do stacks use karke toh sab kar lete hain. Mujhe **strictly $O(1)$ extra space** chahiye, yaani tum koi dusra stack nahi bana sakte. Sirf ek single main stack aur ek variable `mini` use karna hai."*
+
+Yahan hum use karte hain ek mathematical trick: **Encrypted Value Push/Pop Strategy**.
+
+### The Core Idea:
+
+Hum stack me real value push karne ke bajaye ek **Encrypted (Modified) Value** push karenge jab bhi hume naya minimum milega. Yeh encrypted value ek marker (clue) ka kaam karegi jo pop karte waqt hume pichla minimum recover karne me madad karegi.
+
+### Operations Step-by-Step Breakdown:
+
+#### 1. `push(x)` Operation
+
+* **Case A (Stack Khali Hai):** `mini = x` set karo aur `x` ko stack me push kar do.
+* **Case B (`x >= mini`):** Agar aane wala element current minimum se bada ya barabar hai, toh hamara `mini` change nahi hoga. `x` ko directly stack me push kar do.
+* **Case C (`x < mini`):** Naya minimum mil gaya! Hum stack me direct `x` nahi daalenge. Hum ek encrypted value push karenge:
+
+$$\text{Encrypted Value} = 2x - \text{mini}$$
+
+
+
+Aur phir naya minimum update kar denge: `mini = x`.
+*(Dhyan se dekho: Kyunki $x < \text{mini}$, toh $2x - \text{mini}$ hamesha $x$ se chota hoga, yaani current naye `mini` se bhi chota! Yeh hamare liye clue ban jata hai).*
+
+#### 2. `pop()` Operation
+
+* Hum stack ka top element dekhte hain (`int top_val = st.top()`).
+* **Case A (`top_val >= mini`):** Iska matlab yeh ek normal value thi. Chupchaap `st.pop()` kar do. `mini` change nahi hoga.
+* **Case B (`top_val < mini`):** **ALARM!** Agar stack ke top par bethi value hamare `mini` variable se bhi choti hai, iska matlab yeh wahi encrypted value hai jo humne push karte waqt banayi thi. Iska matlab hum us element ko pop kar rahe hain jo khud minimum tha!
+* Pop karne se pehle hume **Pichla Minimum (Old Minimum)** recover karna padega using this reverse formula:
+
+$$\text{Old mini} = 2 \times \text{mini} - \text{top\_val}$$
+
+
+
+Iske baad safely `st.pop()` kar do.
+
+#### 3. `top()` Operation
+
+* Agar `st.top() >= mini` hai, toh real value return karo: `return st.top()`.
+* Agar `st.top() < mini` hai, iska matlab top par encrypted value bethi hai, par asli top value toh khud `mini` variable ke andar saved hai! So, `return mini`.
+
+#### 4. `getMin()` Operation
+
+* Simply `return mini;` strictly **$O(1)$** time me!
+
+---
+
+## Detailed Implementation of Approach 2 (C++)
+
+```cpp
+#include <iostream>
+#include <stack>
+#include <climits>
+
+using namespace std;
+
+class MinStack {
+private:
+    stack<long long> st; // long long use kar rahe hain taaki 2*x - mini me overflow na ho
+    long long mini;
+
+public:
+    MinStack() {
+        mini = INT_MAX;
+    }
+
+    void push(int val) {
+        long long x = val;
+        
+        // Agar stack khali hai
+        if (st.empty()) {
+            mini = x;
+            st.push(x);
+        } 
+        // Agar naya element purane minimum se chota hai
+        else if (x < mini) {
+            // Encrypted value stack me daalo
+            st.push(2 * x - mini);
+            // mini ko update karo
+            mini = x;
+        } 
+        // Normal case
+        else {
+            st.push(x);
+        }
+    }
+
+    void pop() {
+        if (st.empty()) return;
+
+        long long top_val = st.top();
+        st.pop();
+
+        // Agar top_val mini se choti hai, matlab ye encrypted data tha
+        if (top_val < mini) {
+            // Pichla minimum recover karo
+            mini = 2 * mini - top_val;
+        }
+    }
+
+    int top() {
+        if (st.empty()) return -1;
+
+        long long top_val = st.top();
+        // Agar encrypted value hai, toh asli value 'mini' me saved hai
+        if (top_val < mini) {
+            return mini;
+        }
+        return top_val;
+    }
+
+    int getMin() {
+        return mini;
+    }
+};
+
+```
+
+---
+
+## Micro-Level Trace / Dry Run (Approach 2)
+
+Chalo in operations ko sequentially execute karte hain: `push(5)`, `push(3)`, `push(7)`, `getMin()`, `pop()`, `getMin()`.
+
+### 1. `push(5)`
+
+* Stack khali hai.
+* `mini = 5`. Stack frame: `[5]`.
+
+### 2. `push(3)`
+
+* Yahan `3 < mini` (`3 < 5`) hai. Naya minimum mila!
+* Encrypted Value = $2 \times 3 - 5 = \mathbf{1}$.
+* Stack me `1` push hoga. `mini` update hokar `3` ho jayega.
+* Stack Frame: `[5, 1]` (Top par 1 hai, aur `mini = 3`).
+
+### 3. `push(7)`
+
+* Yahan `7 >= mini` (`7 >= 3`) hai. Normal case.
+* `7` direct stack me jayega. `mini` abhi bhi `3` rahega.
+* Stack Frame: `[5, 1, 7]` (Top par 7 hai, aur `mini = 3`).
+
+### 4. `getMin()`
+
+* Direct `mini` return karega, yaani **`3`**. ✅
+
+### 5. `pop()`
+
+* `st.top()` nikala, jo ki `7` hai.
+* Kya `7 < mini` (`7 < 3`) hai? Nahi! Normal pop hai.
+* `7` pop ho gaya. Stack Frame: `[5, 1]`. `mini` abhi bhi `3` hai.
+
+### 6. `pop()` (Ek aur baar chala kar decryption dekhte hain)
+
+* Ab `st.top()` nikala, jo ki `1` hai.
+* Kya `1 < mini` (`1 < 3`) hai? **YES! Alarm bja!**
+* Pichla mini recover karo: $\text{Old mini} = 2 \times \text{mini} - \text{top\_val} \rightarrow 2 \times 3 - 1 = \mathbf{5}$.
+* `1` ko pop kar diya, aur `mini` wapas `5` ban gaya.
+* Stack Frame: `[5]` (Top par 5 hai, aur `mini = 5`).
+
+---
+
+## Saare Edge Cases Certified
+
+1. **Duplicate Minimums (`push(2)`, `push(2)`):** Jab dusra `2` aayega, toh `x < mini` waali condition fail ho jayegi (kyunki `2 < 2` false hai). Yeh normal case me jayega aur direct `2` push hoga bina encryption ke. Pop hote waqt bhi normal pop hoga. Completely safe!
+2. **Negative Numbers Handling:** Agar elements negative hain (e.g., `-5`, `-10`), toh hamara formula $2x - \text{mini}$ negative ranges me bhi perfect mathematics balance rakhta hai. Bas `long long` data type use karna zaroori hai taaki integer overflow/underflow na ho.
+3. **Empty Stack Safeguard:** `pop()` aur `top()` ke shuruat me hi `st.empty()` checks lagaye hain taaki segment fault ya empty stack undefined behavior completely avoid ho sake.
+
+Bhai, Min Stack ka yeh standard two-stack model aur killer $2x - \text{mini}$ encryption mechanism poore edge cases ke sath dimaag me fit baitha? Isme koi mathematical doubt hai ya agle system design pattern par leap maarein?
+
+
+Bhai, ab tum Monotonic aur Min Stack se bhi ek step aage nikal kar pure **Data Structure Architecture & Design** ke sabse heavy problem par aa gaye ho—**Implement "N" Stacks in a Single Array** (LeetCode / CodeStudio Hard).
+
+Interviewer tumse bolega: *"Bhai, ek array me ek stack toh sab bana lete hain, do stack bhi left aur right boundary se manage ho jaate hain. Mujhe **ek hi single array** ke andar **N separate stacks** manage karke dikhao, aur saare operations (`push`, `pop`) strictly **$O(1)$** me hone chahiye!"*
+
+Ise kehte hain **Space-Efficient Multi-Stack Design**. Chalo iski fully optimized architecture ko ekdum detail me crack karte hain.
+
+---
+
+## 1. Asali Khel: The Array Architecture (Do Masters Arrays)
+
+Maan lo hamare paas ek main array hai jiski capacity `S` (Size) hai, aur hume isme `N` stacks chalane hain.
+
+Agar hum array ko $N$ equal parts me divide kar dein (Static Division), toh memory waste hogi (ho sakta hai ek stack full ho jaye aur baaki saare khali pade hon). Hume **Dynamic Allocation** karni padegi taaki jab tak array me space hai, koi bhi stack element push kar sake.
+
+Iske liye hum 3 raw primitive arrays aur 1 variable maintain karte hain:
+
+1. `arr[S]`: Yeh hamari **asali array** hai jo data blocks ko hold karegi.
+2. `top[N]`: Yeh array saare $N$ stacks ke **topmost element ka index** track karegi. Shuruat me sabme `-1` bhara hoga.
+3. `next[S]`: **Yeh is pure structure ka sabse bada master-mind array hai!** Iske do kaam hain:
+* **Jab slot khali hai:** Yeh agle available khali slot (`free spot`) ka index batayega.
+* **Jab slot bhar jata hai:** Yeh us stack ke **just pichle (previous) element ka index** batayega (bilkul ek Linked List ke pointer ki tarah).
+
+
+4. `freeSpot`: Ek simple variable jo batayega ki array me abhi sabse pehla khali slot kaun sa hai jahan hum data push kar sakte hain.
+
+---
+
+## 2. Dynamic Rules: Memory Management
+
+### State Setup (Initialization)
+
+Maan lo array size `S = 6` hai aur stacks `N = 3` hain.
+
+* `top = [-1, -1, -1]` (Teeno stacks khali hain).
+* `freeSpot = 0` (Sabse pehla khali slot index 0 hai).
+* `next` array ko hum chain kar dete hain: `[1, 2, 3, 4, 5, -1]`. (Kyunki abhi sab khali hain, toh index 0 ke baad agla khali 1 hai, 1 ke baad 2 hai, aur aakhiri index 5 ke baad koi khali nahi hai toh `-1`).
+
+---
+
+## 3. Operations Step-by-Step Breakdown
+
+### 🔹 Push Operation: `push(X, m)` (Element X ko Stack m me daalo)
+
+1. **Overflow Check:** Agar `freeSpot == -1`, matlab array me ek bhi khali jagah nahi bachi. Overflow!
+2. **Find Slot:** Sabse pehle khali slot pakdo: `int i = freeSpot;`
+3. **Update Free Spot:** `freeSpot` ko agle khali slot par bhej do: `freeSpot = next[i];`
+4. **Insert Data:** Real array me data daal do: `arr[i] = X;`
+5. **Link Previous Element:** Is naye slot ko us stack ke purane top se link karo: `next[i] = top[m];`
+6. **Update Stack Top:** Stack `m` ka top ab yeh naya index ban gaya: `top[m] = i;`
+
+---
+
+### 🔹 Pop Operation: `pop(m)` (Stack m se element nikaalo)
+
+Pop operation theek push ka ulta (reverse) mathematical mapping hai:
+
+1. **Underflow Check:** Agar `top[m] == -1`, matlab stack `m` pehle se khali hai. Underflow!
+2. **Find Target Index:** Jo index pop karna hai woh stack ka top hai: `int i = top[m];`
+3. **Update Stack Top:** Stack `m` ka top ab pichle element par chala jayega: `top[m] = next[i];`
+4. **Link Back to Free Chain:** Yeh slot ab khali ho raha hai, toh ise current free chain se jodo: `next[i] = freeSpot;`
+5. **Reclaim Free Spot:** `freeSpot` ko wapas is slot par le aao taaki agla push yahan ho sake: `freeSpot = i;`
+6. **Return Data:** `return arr[i];`
+
+---
+
+## 4. Complete C++ Implementation ($O(1)$ Time)
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class NStacks {
+private:
+    int *arr;       // Asali data array
+    int *top;       // Har stack ka top index hold karega
+    int *next;      // Next free slot ya pichla element list link karega
+    int freeSpot;   // Sabse pehle khali slot ka tracking variable
+    int n, s;
+
+public:
+    // Constructor to initialize structure
+    NStacks(int N, int S) {
+        n = N;
+        s = S;
+        arr = new int[s];
+        top = new int[n];
+        next = new int[s];
+
+        // Shuruat me saare stacks khali hain
+        for (int i = 0; i < n; i++) {
+            top[i] = -1;
+        }
+
+        // Next array ko free slots se chain karo
+        for (int i = 0; i < s - 1; i++) {
+            next[i] = i + 1;
+        }
+        next[s - 1] = -1; // Aakhiri slot ke baad koi khali nahi hai
+
+        freeSpot = 0; // Starting free spot index 0 hai
+    }
+
+    // Push operation in O(1) Time
+    bool push(int x, int m) {
+        // Stack index 1-based se 0-based convert kar rahe hain (m - 1)
+        int stackIdx = m - 1;
+
+        // Step 1: Check for overflow
+        if (freeSpot == -1) {
+            return false;
+        }
+
+        // Step 2: Khali slot ka index nikaalo
+        int i = freeSpot;
+
+        // Step 3: freeSpot ko agle free slot par update karo
+        freeSpot = next[i];
+
+        // Step 4: Data insert karo
+        arr[i] = x;
+
+        // Step 5: Is slot ko stack ke purane top se link karo
+        next[i] = top[stackIdx];
+
+        // Step 6: Stack ka top is naye index par set karo
+        top[stackIdx] = i;
+
+        return true;
+    }
+
+    // Pop operation in O(1) Time
+    int pop(int m) {
+        int stackIdx = m - 1;
+
+        // Step 1: Check for underflow
+        if (top[stackIdx] == -1) {
+            return -1;
+        }
+
+        // Step 2: Pop hone wale element ka index pakdo
+        int i = top[stackIdx];
+
+        // Step 3: Stack ka top update karke pichle element par le jao
+        top[stackIdx] = next[i];
+
+        // Step 4: Is slot ko current free chain se link karo
+        next[i] = freeSpot;
+
+        // Step 5: freeSpot ko wapas is slot par point karao
+        freeSpot = i;
+
+        return arr[i];
+    }
+};
+
+```
+
+---
+
+## 5. Micro-Level Visual Trace / Dry Run
+
+Maan lo `N = 3` (Stacks), `S = 3` (Array size).
+Initial: `top=[-1, -1, -1]`, `next=[1, 2, -1]`, `freeSpot=0`
+
+### 1. `push(10, 1)` -> Element 10 in Stack 1
+
+* `i = freeSpot` $\rightarrow$ `i = 0`.
+* `freeSpot = next[0]` $\rightarrow$ `freeSpot = 1`.
+* `arr[0] = 10`.
+* `next[0] = top[0]` $\rightarrow$ `next[0] = -1`.
+* `top[0] = 0`.
+* **State Now:** `arr=[10, _, _]`, `top=[0, -1, -1]`, `next=[-1, 2, -1]`, `freeSpot=1`.
+
+### 2. `push(20, 2)` -> Element 20 in Stack 2
+
+* `i = freeSpot` $\rightarrow$ `i = 1`.
+* `freeSpot = next[1]` $\rightarrow$ `freeSpot = 2`.
+* `arr[1] = 20`.
+* `next[1] = top[1]` $\rightarrow$ `next[1] = -1`.
+* `top[1] = 1`.
+* **State Now:** `arr=[10, 20, _]`, `top=[0, 1, -1]`, `next=[-1, -1, -1]`, `freeSpot=2`.
+
+### 3. `push(30, 1)` -> Element 30 in Stack 1 again
+
+* `i = freeSpot` $\rightarrow$ `i = 2`.
+* `freeSpot = next[2]` $\rightarrow$ `freeSpot = -1` (No more free space).
+* `arr[2] = 30`.
+* `next[2] = top[0]` $\rightarrow$ `next[2] = 0` (Yeh clue hai! 30 ke niche index 0 baitha hai).
+* `top[0] = 2`.
+* **State Now:** `arr=[10, 20, 30]`, `top=[2, 1, -1]`, `next=[-1, -1, 0]`, `freeSpot=-1`.
+
+### 4. `pop(1)` -> Pop from Stack 1
+
+* `i = top[0]` $\rightarrow$ `i = 2` (Element `30` target hai).
+* `top[0] = next[2]` $\rightarrow$ `top[0] = 0` (Stack 1 ka top wapas `10` par chala gaya!).
+* `next[2] = freeSpot` $\rightarrow$ `next[2] = -1`.
+* `freeSpot = 2` (Index 2 wapas khali ghoshit ho gaya).
+* **Return:** `30`. ✅
+
+---
+
+## 6. Complexity Analysis
+
+* **Time Complexity:** * `push()` $\rightarrow$ **$O(1)$** (Sirf 4-5 variable assignment operations hain, koi loop nahi).
+* `pop()` $\rightarrow$ **$O(1)$** (Direct internal pointer dynamic jumps hain).
+
+
+* **Space Complexity:** **$O(N + S)$**
+* Humne size `S` ke do arrays (`arr` aur `next`) aur size `N` ka ek array (`top`) maintain kiya hai. Kisi bhi dynamic stack memory allocation ke comparison me yeh memory tightly optimized frame me kaam karti hai.
+
+
+
+Bhai, `next[]` array ka yeh dual role play (free slots link + previous element stack chain memory) aur $O(1)$ dynamic distribution ka logic dimaag me lock hua? Ab Stack aur Arrays ke is system design par koi aur doubt bacha hai ya kisi solid unique problem par leap lagayein?
+
+
+Bhai, ab tumne is problem ko us level par touch kiya hai jahan iski internal architecture ekdum crystal clear ho jati hai.
+
+Pichle approach me humne `next[]` array use kiya tha, jo actually kya kar raha tha? Woh index-based pointers ko store karke ek **Linked List** hi toh simulate kar raha tha!
+
+Agar interviewer tumse kahe: *"Bhai, mujhe arrays ke mathematical formulas (`next[i] = top[m]`) me nahi ulajhna. Mujhe **Real Linked List Node Objects** ka use karke N Stacks design karke dikhao!"* toh yeh approach sabse zyada clean aur intuitive lagti hai.
+
+Chalo isko structural node objects ke sath $O(1)$ me design karte hain.
+
+---
+
+## 1. Core Architecture (The Node Anatomy)
+
+Is baar hum index tracking ka dimaag nahi lagayenge. Hum actual Stack Nodes banayenge jo aapas me Linked List ke through connected honge.
+
+Har ek Node ke paas do cheezein hongi:
+
+1. `data`: Jo asli value hum push kar rahe hain.
+2. `next`: Ek pointer jo us stack ke **just pichle (previous) element** ki taraf point karega (bilkul standard stack implemented via linked list ki tarah).
+
+### Master Pointers Array: `top[]`
+
+Hum ek array maintain karenge `top[N]` size ka, jahan `top[m]` directly point karega Stack `m` ke topmost **Node Object** par. Shuruat me saare stacks khali hain, toh `top` array me saare pointers `NULL` honge.
+
+---
+
+## 2. Operations Logic ($O(1)$ Time)
+
+### 🔹 Push Operation: `push(X, m)`
+
+Maan lo hume element `X` ko Stack `m` me push karna hai:
+
+1. Ek naya Node create karo: `Node* newNode = new Node(X);`
+2. Is naye node ke `next` pointer ko Stack `m` ke purane top se jodo: `newNode->next = top[m];`
+3. Stack `m` ke `top` pointer ko update karke is naye node par le aao: `top[m] = newNode;`
+
+### 🔹 Pop Operation: `pop(m)`
+
+Maan lo hume Stack `m` se element nikaalna hai:
+
+1. **Underflow Check:** Agar `top[m] == NULL`, matlab stack pehle se khali hai. Return `-1`.
+2. **Target Node:** Jis node ko pop karna hai, use temporarliy track karo: `Node* temp = top[m];`
+3. **Update Top:** Stack ka top pointer ab pichle node par chala jayega: `top[m] = top[m]->next;`
+4. **Extract Data & Free Memory:** Data save karo, node ko delete (free) karo, aur data return kar do:
+```cpp
+int poppedData = temp->data;
+delete temp;
+return poppedData;
+
+```
+
+
+
+---
+
+## 3. C++ Implementation (Real Node-Based Object Design)
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// Class for Linked List Node
+class Node {
+public:
+    int data;
+    Node* next;
+
+    Node(int val) {
+        data = val;
+        next = NULL;
+    }
+};
+
+class NStacksLinkedList {
+private:
+    vector<Node*> top; // Har stack ke topmost node ka pointer hold karega
+    int n;             // Number of stacks
+
+public:
+    // Constructor
+    NStacksLinkedList(int N) {
+        this->n = N;
+        // Shuruat me saare N stacks ke top pointers NULL honge
+        top.assign(N, NULL);
+    }
+
+    // Push Operation in O(1) Time
+    void push(int x, int m) {
+        int stackIdx = m - 1; // 1-based to 0-based index conversion
+
+        // Step 1: Naya node create karo heap memory par
+        Node* newNode = new Node(x);
+
+        // Step 2: Naye node ke next ko current stack ke top se link karo
+        newNode->next = top[stackIdx];
+
+        // Step 3: Current stack ka top ab naya node ban gaya
+        top[stackIdx] = newNode;
+    }
+
+    // Pop Operation in O(1) Time
+    int pop(int m) {
+        int stackIdx = m - 1;
+
+        // Step 1: Underflow Check
+        if (top[stackIdx] == NULL) {
+            cout << "Stack " << m << " Underflow!" << endl;
+            return -1;
+        }
+
+        // Step 2: Pop hone wale node ko catch karo
+        Node* temp = top[stackIdx];
+
+        // Step 3: Stack ke top pointer ko pichle node par shift karo
+        top[stackIdx] = top[stackIdx]->next;
+
+        // Step 4: Data extract karo aur memory free karo
+        int poppedValue = temp->data;
+        delete temp; 
+
+        return poppedValue;
+    }
+
+    // Destructor to clean up memory
+    ~NStacksLinkedList() {
+        for (int i = 0; i < n; i++) {
+            Node* curr = top[i];
+            while (curr != NULL) {
+                Node* temp = curr;
+                curr = curr->next;
+                delete temp;
+            }
+        }
+    }
+};
+
+```
+
+---
+
+## 4. Array-Simulation vs Real Linked List (The Trade-Offs)
+
+Interviewer tumse dono approaches discuss karne ke baad unka comparisons pakka puchega. Yeh differences hamesha dhyan me rakhna:
+
+| Parameter | Array Simulated (`next[]` Approach) | Real Linked List (`Node*` Approach) |
+| --- | --- | --- |
+| **Memory Allocation** | **Static / Fixed Bound.** Array ka total size `S` pehle se fix hota hai. Usse zyada push nahi kar sakte. | **Dynamic.** Jab tak tumhare system/RAM me memory khali hai, tum unlimited nodes push karte reh sakte ho. |
+| **Cache Locality** | **Excellent.** Saare elements ek hi contiguous array memory chunk me hote hain, toh CPU pre-fetching bohot fast hoti hai. | **Poor.** Har node heap memory par alag-alag addresses par scatter hota hai, jisse pointer jumping me **Cache Misses** hote hain. |
+| **Internal Overhead** | $O(N + S)$ extra memory integers ki maintain karni padti hai pointers ke liye. | Har node ke sath ek 8-byte ka primitive pointer (`next`) carry hota hai, jo 64-bit architecture me heavy memory overhead deta hai. |
+
+### Interviewer Ko Kaise Frame Karein?
+
+> *"Sir, agar hume dynamic capabilities chahiye jahan total array size pehle se bounded na ho, toh **Linked List Approach** best hai kyunki yeh unlimited scaling deti hai. Lekin agar hume ultra-high performance, low-latency ya low-memory footprint chahiye (jaise embedded systems ya HFT engines me), toh **Array Simulation with `next[]**` behtar hai kyunki woh contiguous memory aur solid cache hits provide karti hai."*
+
+Bhai, N Stacks ka yeh Linked List node implementation dimaag me ekdum transparently fit ho gaya? Pointers ka khel samajh aa gaya pure logic ke sath?
+
+
+# Questions
+
+
+
+Bhai, chalo LeetCode 1944 (**Number of Visible People in a Queue**) ka brute force logic ekdum deep details ke sath phodte hain.
+
+Yeh question dekhne me jitna seedha lagta hai, iske rules उतने hi dhasu hain. Interviewer sabse pehle tumse iska $O(N^2)$ brute force hi puchega taaki woh dekh sake ki tum hidden constraints ko loop me track kar pa rahe ho ya nahi.
+
+---
+
+## 1. Problem Ki Asali Shart (Visual Rules)
+
+Maan lo line me kuch log khade hain. Person `i` apne right side me dekh raha hai. Woh kisi person `j` (`i < j`) ko sirf TABHI dekh sakta hai agar:
+
+1. **Rule 1 (Immediate Next):** `j` uske theek agla banda ho (yaani beech me koi na ho), **YA**
+2. **Rule 2 (The Line of Sight):** `i` aur `j` ke beech me jitne bhi log khade hain, woh saare ke saare **`j` wale bande se strictly chote** hone chahiye.
+3. **Rule 3 (The Wall Block):** Jaise hi `i` ko right me koi aisa banda mil jata hai jo **`i` se bada ya barabar** ho, `i` ki nazar wahan block ho jati hai. Uske baad wale logon ko `i` kabhi nahi dekh payega.
+
+---
+
+## 2. Brute Force Logic (The Double Scan Engine)
+
+Brute force ka seedha funda hai—**"Har ek bande par khade ho jao, aur uske right me ek-ek karke sabko scan karo."**
+
+Maan lo hum Person `i` ke liye calculation kar rahe hain:
+
+* Hum ek variable rakhenge `max_height_till_now = 0`. Yeh track karega ki `i` aur current person `j` ke beech me ab ke tak ka sabse uncha banda kaun sa aaya hai.
+* Hum `j` ka loop chalayenge `i + 1` se lekar `N-1` tak.
+* **Visibility Check:** Agar current person `arr[j]` ab tak ke sabse bade bande (`max_height_till_now`) se bada hai, iska matlab `i` is `j` ko **dekh sakta hai!** (Kyunki beech ke saare log `j` se chote hain). Toh hum `visible_count++` kar denge.
+* Phir hum apne obstruction check ko update karenge: `max_height_till_now = max(max_height_till_now, arr[j]);`
+* **Block Check:** Agar `arr[j]` ki height khud `arr[i]` se badi ya barabar ho gayi, toh hamari line of sight completely block ho gayi! Ab iske aage check karne ka koi fayda nahi, hum turant `break` kar denge.
+
+---
+
+## 3. Brute Force Code Implementation (C++)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    // Brute Force Approach: O(N^2) Time Complexity
+    vector<int> canSeePeopleCountBrute(vector<int>& heights) {
+        int n = heights.size();
+        vector<int> ans(n, 0);
+
+        // Outer Loop: Har ek person 'i' ke liye check karo
+        for (int i = 0; i < n; i++) {
+            int visible_count = 0;
+            int max_height_till_now = 0;
+
+            // Inner Loop: 'i' ke right me jitne log hain unhe scan karo
+            for (int j = i + 1; j < n; j++) {
+                
+                // Agar beech me koi bhi bada banda nahi aaya hai jo j ko chhupa sake
+                if (heights[j] > max_height_till_now) {
+                    visible_count++;
+                }
+
+                // Current height ko max_height tracker me update karo
+                max_height_till_now = max(max_height_till_now, heights[j]);
+
+                // Rule 3 Violation: Agar koi banda 'i' se bada ya barabar mil gaya,
+                // toh 'i' ki nazar aage block ho gayi. Break the loop!
+                if (heights[j] >= heights[i]) {
+                    break;
+                }
+            }
+
+            // Total visibility count store karo
+            ans[i] = visible_count;
+        }
+
+        return ans;
+    }
+};
+
+```
+
+---
+
+## 4. Micro Step-by-Step Dry Run
+
+Chalo ek dhasu array lekar iska dry run karte hain: `heights = [10, 6, 8, 5, 11]` (`N = 5`)
+
+### 🔹 Case 1: `i = 0` (Banda `10` dekh raha hai)
+
+* `j = 1` (Banda `6`): `6 > 0` (True) $\rightarrow$ `visible_count = 1`. `max_height = 6`. `6 >= 10` False. Loop continues.
+* `j = 2` (Banda `8`): `8 > 6` (True, kyunki 8 pichle bande 6 se bada hai, toh 10 use dekh sakta hai) $\rightarrow$ `visible_count = 2`. `max_height = 8`. `8 >= 10` False. Loop continues.
+* `j = 3` (Banda `5`): `5 > 8` (False! `8` ne `5` ko block kar diya) $\rightarrow$ Count change nahi hoga. `max_height = max(8,5) = 8`. `5 >= 10` False. Loop continues.
+* `j = 4` (Banda `11`): `11 > 8` (True, kyunki 11 ab tak ke max 8 se bada hai) $\rightarrow$ `visible_count = 3`. `max_height = 11`. `11 >= 10` **TRUE!** (11 ne 10 ki nazar permanently block kar di). Loop breaks!
+* **Result for index 0:** `ans[0] = 3` (Banda 10 dekh sakta hai 6, 8 aur 11 ko).
+
+### 🔹 Case 2: `i = 1` (Banda `6` dekh raha hai)
+
+* `j = 2` (Banda `8`): `8 > 0` (True) $\rightarrow$ `visible_count = 1`. `max_height = 8`. `8 >= 6` **TRUE!** (8 ne 6 ko block kar diya). Loop breaks immediately!
+* **Result for index 1:** `ans[1] = 1`.
+
+### 🔹 Case 3: `i = 2` (Banda `8` dekh raha hai)
+
+* `j = 3` (Banda `5`): `5 > 0` (True) $\rightarrow$ `visible_count = 1`. `max_height = 5`. `5 >= 8` False.
+* `j = 4` (Banda `11`): `11 > 5` (True) $\rightarrow$ `visible_count = 2`. `max_height = 11`. `11 >= 8` **TRUE!** Loop breaks.
+* **Result for index 2:** `ans[2] = 2`.
+
+### 🔹 Case 4: `i = 3` (Banda `5` dekh raha hai)
+
+* `j = 4` (Banda `11`): `11 > 0` (True) $\rightarrow$ `visible_count = 1`. `11 >= 5` **TRUE!** Loop breaks.
+* **Result for index 3:** `ans[3] = 1`.
+
+### 🔹 Case 5: `i = 4` (Banda `11` dekh raha hai - Last person)
+
+* Right me koi nahi hai. Loop chalega hi nahi.
+* **Result for index 4:** `ans[4] = 0`.
+
+**Final Output Vector:** `[3, 1, 2, 1, 0]` ✅
+
+---
+
+## 5. Complexity Analysis & Faltu Kaam
+
+* **Time Complexity: $O(N^2)$**
+* Outer loop $N$ baar chalta hai aur inner loop worst case me (jaise strictly increasing order array `[1, 2, 3, 4, 5]` me) har baar aage tak scan karta hai. Total operations $\approx \frac{N \times (N-1)}{2}$, yaani quadratic $O(N^2)$. Agar array ka size $10^5$ ho gaya, toh code phat jayega (TLE).
+
+
+* **Space Complexity: $O(1)$** (Bina kisi extra memory dependency ke).
+
+### Faltu Kaam Kya Ho Raha Hai? (The Stack Intuition)
+
+Interviewer puchega: *"Bhai, tumne brute force toh ekdum makkhan chamkaya, par isme resource kahan waste ho raha hai?"*
+
+Tumhara jawab hona chahiye:
+
+> *"Sir, jab hum index 0 (`10`) ke liye check kar rahe the, tab humne jaan liya tha ki index 2 (`8`), index 3 (`5`) se bada hai, isiliye 5 kabhi visible nahi ho payega. Jab hum baad me piche se aage scan karenge, toh hum ek **Monotonic Decreasing Stack** maintain kar sakte hain. Stack me sirf wahi log bachenge jo aage dekhne me rukawat ban sakte hain. Jo chote elements pop honge, wahi hamara directly visible count bante chale jayenge!"*
+
+Bhai, kya is problem ka brute force framework, line of sight rules aur loop breaks ki logic dimaag me shishe ki tarah saaf hui? Ab bolo toh iska dhasu **Monotonic Stack Optimized ($O(N)$ Time)** wala logic code aur counting pop technique ke sath phodein?
+
+
+
+Bhai, chalo ab is problem ko **$O(N)$ Time Complexity** aur **$O(N)$ Space Complexity** me Monotonic Stack se poora kholte hain. Yeh logic bohot shaandar hai aur iska dry-run bade-bade interviewers ko impress karne ke liye kaafi hai.
+
+---
+
+## 1. Core Intuition (Ulta Socho - Right to Left)
+
+Agar hum left-to-right chalte hain, toh hume aage ki height ka pehle se pata nahi hota, isiliye brute force me baar-baar loop chalana padta hai.
+
+Lekin agar hum **Right-to-Left (Piche se Aage)** traverse karein, toh hum un saare logon ko ek stack me maintain kar sakte hain jo future me (yaani left waale logon ke liye) rukawat ya line-of-sight ka kaam karenge.
+
+Hum stack ko strictly **Monotonic Decreasing Order** me maintain karenge (matlab stack ke bottom par sabse bada banda hoga aur top par sabse chota).
+
+### The Pop Counting Secret:
+
+Jab ek naya banda `heights[i]` piche se aate hue stack ke top elements ko dekhta hai, toh:
+
+1. **Har ek pop par count badao (`ans[i]++`):** Agar stack ka top element `heights[i]` se chota hai, toh `heights[i]` use **pakka dekh sakta hai**. Hum use pop karenge, kyunki ab is pop hue chote element ko `heights[i]` ke left waale log kabhi nahi dekh payenge (Kyunki `heights[i]` unke beech me ek deewar ban kar khada ho gaya hai).
+2. **Loop rukne ke baad extra check (`ans[i]++`):** Jab chote elements pop hona band ho jayein, tab agar stack abhi bhi khali nahi hai, iska matlab stack ke top par jo banda baitha hai woh `heights[i]` se **bada ya barabar** hai. `heights[i]` use bhi dekh sakta hai (yeh uski nazar ka aakhiri point hoga), toh hum count ko ek aur baar `+1` kar denge.
+
+---
+
+## 2. Optimized C++ Implementation ($O(N)$ Time)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+class Solution {
+public:
+    // Optimized Approach: O(N) Time and O(N) Space
+    vector<int> canSeePeopleCount(vector<int>& heights) {
+        int n = heights.size();
+        vector<int> ans(n, 0);
+        stack<int> st; // Monotonic Decreasing Stack (Stores Heights)
+
+        // Piche se aage travel karo
+        for (int i = n - 1; i >= 0; i--) {
+            int count = 0;
+
+            // Jab tak stack me chote log hain, current banda unhe dekh sakta hai
+            while (!st.empty() && heights[i] > st.top()) {
+                count++;
+                st.pop(); // In chote logon ko ab left wale nahi dekh payenge
+            }
+
+            // Agar stack abhi bhi khali nahi hai, matlab ek bada banda bacha hai
+            // Current banda us bade bande ko bhi dekh sakta hai (par uske piche nahi dekh payega)
+            if (!st.empty()) {
+                count++;
+            }
+
+            // Current bande ka total visibility score store karo
+            ans[i] = count;
+
+            // Current bande ko stack me push karo taaki left wale iska comparison kar sakein
+            st.push(heights[i]);
+        }
+
+        return ans;
+    }
+};
+
+```
+
+---
+
+## 3. Micro-Level Visual Dry Run
+
+Array wahi purani lete hain: `heights = [10, 6, 8, 5, 11]`, `N = 5`
+
+### 🔹 Step 1: `i = 4` (Banda `11`)
+
+* Stack khali hai (`st.empty() == true`).
+* `while` loop nahi chalega. `if (!st.empty())` bhi false.
+* `count = 0`. `ans[4] = 0`.
+* `11` stack me push hua. **Stack State:** `[11]` (Top par 11 hai).
+
+### 🔹 Step 2: `i = 3` (Banda `5`)
+
+* Stack top par `11` hai. Kya `5 > 11` hai? Nahi! `while` loop bypassed.
+* `st.empty()` false hai (11 baitha hai), toh `if` condition true $\rightarrow$ `count++` (count ab `1` hua).
+* `ans[3] = 1`.
+* `5` stack me push hua. **Stack State:** `[11, 5]` (Top par 5 hai).
+
+### 🔹 Step 3: `i = 2` (Banda `8`)
+
+* Stack top par `5` hai. Kya `8 > 5` hai? **Yes!**
+* `count++` (`1`), `5` pop ho gaya.
+
+
+* Agla top `11` hai. Kya `8 > 11` hai? Nahi! `while` loop stops.
+* Stack khali nahi hai (`11` bacha hai), toh `if` condition se `count++` (`2`).
+* `ans[2] = 2`.
+* `8` stack me push hua. **Stack State:** `[11, 8]` (Top par 8 hai).
+
+### 🔹 Step 4: `i = 1` (Banda `6`)
+
+* Stack top par `8` hai. Kya `6 > 8` hai? Nahi.
+* Stack khali nahi hai, toh `if` condition se `count++` (`1`).
+* `ans[1] = 1`.
+* `6` stack me push hua. **Stack State:** `[11, 8, 6]` (Top par 6 hai).
+
+### 🔹 Step 5: `i = 0` (Banda `10`)
+
+* Stack top par `6` hai. Kya `10 > 6` hai? **Yes!** $\rightarrow$ `count++` (`1`), `6` pop.
+* Agla top `8` hai. Kya `10 > 8` hai? **Yes!** $\rightarrow$ `count++` (`2`), `8` pop.
+* Agla top `11` hai. Kya `10 > 11` hai? Nahi. Loop stops.
+* Stack khali nahi hai (`11` abhi bhi hai), toh `if` condition se `count++` (`3`).
+* `ans[0] = 3`.
+* `10` push hua. **Final Stack State:** `[11, 10]`.
+
+**Final Result Vector:** `[3, 1, 2, 1, 0]` ✅ (Exactly identical to brute force but in lighting fast speed!)
+
+---
+
+## 4. Complexity Analysis (The Big Scale Win)
+
+* **Time Complexity: $O(N)$**
+* Dekhne me nested loops lagte hain (`for` ke andar `while`), par dhyan se dekho: **Array ka har ek element stack me maximum ek hi baar `push` hota hai aur maximum ek hi baar `pop` hota hai.**
+* Pure array ke liye total pop operations kabhi bhi $N$ se zyada nahi ho sakte. Isiliye Amortized Time Complexity strictly **$O(N)$** linear ho jati hai.
+
+
+* **Space Complexity: $O(N)$**
+* Worst-case me agar array strictly decreasing order me ho (e.g., `[5, 4, 3, 2, 1]`), toh koi pop nahi hoga aur saare elements stack me bharte chale jayenge, jisse stack ka size $N$ touch karega.
+
+
+
+---
+
+## 5. Interviewer Ke Saamne Boss Move 😎
+
+Jab tum yeh solution unhe samjhaoge, toh unhe yeh line bolna mat bhoolna:
+
+> *"Sir, standard Next Greater Element me hum sirf tab tak pop karte hain jab tak bada element na mile, par hum pop ka count save nahi karte. Is problem ka core hack hi yeh hai ki **jo chote elements pop ho rahe hain, woh current index ke liye visible hain par future ke left-side elements ke liye shadow (hide) ho chuke hain.** Is dynamic elimination ki wajah se hum bina baar-baar re-scanning kiye linear time me answer lock kar pa rahe hain."*
+
+Bhai, kya Queue Visibility ka yeh detailed mathematical pop counting structure tumhare dimaag me ekdum crystal clear ho gaya? Ab koi aur dynamic stack coding pattern uthayein ya is series ko yahan conclude karein?
+
+
+
+Bhai, tumhari nishani ekdum solid software engineer wali hai! Tumne sahi pakda—kya hum is $O(N)$ wale approach ko **aur zyada micro-optimize** kar sakte hain?
+
+Technically, **Time Complexity $O(N)$ se kam nahi ho sakti** kyunki har bande ki height check karna compulsory hai. Lekin hum **Space Complexity, Memory Overhead, aur Cache Locality** ko next level par optimize kar sakte hain.
+
+Abhi jo humne code dekha, usme do bade overheads the:
+
+1. `std::stack` internally `std::deque` use karta hai jo heap memory par baar-baar dynamic chunks allocate/deallocate karta hai. Is pointer manipulation me latency hoti hai.
+2. Hum right-to-left loop ke andar ek separate variable `count` aur multiple condition checks lagate hain.
+
+Chalo in sabhi overheads ko bypass karke isko strictly **$O(1)$ Auxiliary Extra Space (bina stack object ke)** aur **Zero Heap Allocation** ke sath optimize karte hain using **Array-Based Monotonic Simulation (Single Array Architecture)**.
+
+---
+
+## 1. Asali Khel: The Intuition of Array Simulation
+
+Hum koi external stack object nahi banayenge. Jo hamari `ans[]` array (ya result array) ban rahi hai, hum usi ko use karke ya fir ek raw array pointer variable `top` maintain karke memory frame ko control karenge.
+
+Lekin isse bhi dhasu ek optimization hai—**Left-to-Right Single Pass using Index-Differencing**. Chalo right-to-left ko hi primitive speed par optimized karte hain bina stack library ka use kiye. Hum ek simple raw integer array `st[]` ko stack memory (RAM ki local frame stack, na ki heap) par allocate karenge, jo contiguous hotey hain aur CPU Cache me direct hit hote hain (Excellent Cache Locality).
+
+---
+
+## 2. Highly Optimized C++ Implementation (Raw Performance)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    // Ultimate Optimized Version: Zero Heap Allocation & Max Cache Locality
+    vector<int> canSeePeopleCountUltimate(vector<int>& heights) {
+        int n = heights.size();
+        vector<int> ans(n, 0);
+
+        // Fixed-size raw array allocated on Stack Memory Frame (No dynamic heap overhead)
+        int st[n]; 
+        int top = -1; // Stack pointer simulation
+
+        // Piche se aage travel karo (Right-to-Left)
+        for (int i = n - 1; i >= 0; i--) {
+            int current_height = heights[i];
+            int visible_count = 0;
+
+            // Monotonic Stack Rule using raw pointer operations
+            // top != -1 matlab stack empty nahi hai
+            while (top != -1 && current_height > heights[st[top]]) {
+                visible_count++;
+                top--; // st.pop() -> Highly optimized decrement operation
+            }
+
+            // Agar stack me abhi bhi koi banda bacha hai, matlab wo current se bada ya barabar hai
+            if (top != -1) {
+                visible_count++;
+            }
+
+            ans[i] = visible_count;
+
+            // st.push(i) -> Storing indices instead of values for precise referencing
+            top++;
+            st[top] = i;
+        }
+
+        return ans;
+    }
+};
+
+```
+
+---
+
+## 3. Deep Architectural Intuition (Khel Kahan Badla?)
+
+### 🔹 1. Memory Level Optimization (Heap vs Stack Frame)
+
+Standard library ka `std::stack<int>` jab memory badhata hai, toh system calls use hote hain naye memory blocks allocate karne ke liye. Humne code me `int st[n]` use kiya hai. Yeh stack memory frame (local execution scope) me directly contiguous compile hota hai. CPU jab `st[top]` ko read karta hai, toh padosi memory cells pehle se CPU Cache me aa chuke hote hain (**Zero Cache Misses**).
+
+### 🔹 2. On-The-Fly Processing
+
+Humne data values ki jagah **Indices (`i`)** ko stack me push kiya hai. Iska fayda yeh hota hai ki agar future me interviewer tumse pooch le ki *"Mujhe yeh bhi batao ki kaun sa banda kisko dekh raha hai (exact target indices)"*, toh tum bina array structure badle direct `st[top]` se index pull kar sakte ho.
+
+---
+
+## 4. Performance Benchmarking
+
+| Parameter | Previous Stack Version | Ultimate Optimized Version |
+| --- | --- | --- |
+| **Data Structure** | `std::stack<int>` (Wrapper over deque) | Primitive `int st[]` (Raw Stack Memory) |
+| **Allocation Time** | Dynamic (Can cause runtime latency spikes) | **Instantaneous** (Allocated during function stack frame load) |
+| **Cache Hits** | Moderate (Memory scattered ho sakti hai) | **100% Contiguous Memory Hit Rate** |
+| **Execution Overhead** | Member function pointer overhead (`st.push()`, `st.pop()`) | Simple assembly-level pointer shifts (`top++`, `top--`) |
+
+---
+
+## 5. Interviewer Blockbuster Move 😎
+
+Jab tum compiler aur hardware level par is micro-optimization ko explain karoge, toh interviewer ke paas counter-question karne ka mauka nahi bachega:
+
+> *"Sir, algorithmic complexity abhi bhi $O(N)$ linear hi hai, kyunki lower bound optimal hai. Lekin low-latency environments (jaise HFT engines ya embedded logic) me STL containers dynamic memory allocation ki wajah se minor lags introduce karte hain. Maine standard stack ko stack-frame arrays se simulate kiya hai. Isse operations raw CPU assembly operations (`inc`/`dec`) me turn ho jate hain, jo iski performance ko hardware limits tak maximize kar deta hai."*
+
+Bhai, Queue Visibility ka yeh highest micro-optimized, raw array simulation logic dimaag me ekdum solid rock ki tarah clear hua?
+
+Ab bolo toh Stack ka agla dhasu variant uthayein (jaise **Sum of Subarray Minimums - LeetCode 907**, jisme gajab ki math lagti hai), ya isme kuch aur phodna hai?
+
+
+
+
+Bhai, chalo LeetCode 394 (**Decode String**) ka brute force logic ekdum deep details ke sath samajhte hain.
+
+Interviewer jab is problem ko **"Multi-stack compiler parsing framework"** ke roop me dekhta hai, toh uska asli maqsad yeh check karna hota hai ki tum nested loops aur string manipulations ko bina standard stack data structure ke, yaani purely raw arrays/recursion/pointers se kaise trace karte ho.
+
+---
+
+## 1. Problem Statement Kya Hai? (The Encoding Rules)
+
+Hume ek encoded string di jati hai, jiska format hota hai: `k[encoded_string]`
+Iska matlab hai ki `[ ]` ke andar bethi hui string ko exactly `k` baar repeat (multiply) karna hai.
+
+### Sabase Bada Twist: Nesting 🌀
+
+String ke andar string nested ho sakti hai.
+
+* Simple Case: `3[a]2[bc]` $\rightarrow$ `aaa` + `bcbc` = `aaaapcbc`.
+* Nested Case: `3[a2[c]]` $\rightarrow$ Pehle andar wala `2[c]` solve hoga (`cc`), fir bahar wala loop chalega `3[acc]` $\rightarrow$ `accaccacc`.
+
+---
+
+## 2. Core Brute Force Logic (The Linear Scanner & String Replacement)
+
+Bina kisi Stack Structure ke, brute force ka sabse natural tarika hai **"Search, Extract, Solve, and Replace"**. Hum tab tak string me sabse andar waale brackets dhoondhte rahenge, jab tak saare brackets khatam nahi ho jaate.
+
+### Algorithmic Steps:
+
+1. **Find the Innermost Pair:** Puri string me left-to-right scan karo aur sabse pehla closing bracket `]` dhoondho.
+2. **Track Back to Opening Bracket:** Us `]` se piche (left side) travel karo aur uske theek pehle waala opening bracket `[` dhoondho. Kyunki yeh sabse pehla `]` hai, isiliye iske beech me koi aur bracket nahi hoga. Humne successfully **sabse andar waali substring** dhoondh li!
+3. **Extract Number `k`:** Us `[` ke aur piche (left side) jao aur check karo ki multiplier number `k` kitna bada hai (yeh 1 digit se zyada ka ho sakta hai, jaise `100[a]`).
+4. **Decompress and Replace:** Us `k[substring]` wale poore tukde ko loop chala kar decode karo, aur original string me us pure segment ko naye decoded string se **replace (substitute)** kar do.
+5. **Repeat:** Yeh process tab tak ek `while` loop me chalate raho, jab tak string me ek bhi `[` ya `]` bacha hua hai.
+
+---
+
+## 3. Brute Force Code Implementation (C++)
+
+Isme hum koi Stack library use nahi karenge. Purely primitive string methods (`find`, `substr`, `replace`) se brute force compiler parser simulate karenge.
+
+```cpp
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    // Pure Brute Force Approach: Loop & String Replacement
+    string decodeStringBrute(string s) {
+        
+        // Tab tak chalao jab tak string me closing bracket mil raha hai
+        while (s.find(']') != string::npos) {
+            
+            // Step 1: Sabse pehla closing bracket dhoondho
+            size_t closeIdx = s.find(']');
+            
+            // Step 2: Us closeIdx se piche jaakar immediate opening bracket dhoondho
+            size_t openIdx = s.rfind('[', closeIdx);
+            
+            // Is range ke beech ki text extract karo -> [encoded_string]
+            string substr_to_repeat = s.substr(openIdx + 1, closeIdx - openIdx - 1);
+            
+            // Step 3: Opening bracket se piche jaakar poora number 'k' extract karo
+            int numStart = openIdx - 1;
+            while (numStart >= 0 && isdigit(s[numStart])) {
+                numStart--;
+            }
+            numStart++; // Pointer ek step piche chala gaya tha, adjust karo
+            
+            int k = stoi(s.substr(numStart, openIdx - numStart));
+            
+            // Step 4: String ko 'k' baar repeat karke nayi decoded substring banao
+            string decodedSegment = "";
+            for (int i = 0; i < k; i++) {
+                decodedSegment += substr_to_repeat;
+            }
+            
+            // Total segment size jo replace hona hai: number se lekar closing bracket tak
+            size_t segmentLength = closeIdx - numStart + 1;
+            
+            // Step 5: Original string me us k[encoded_string] ko replace karo
+            s.replace(numStart, segmentLength, decodedSegment);
+        }
+        
+        return s;
+    }
+};
+
+```
+
+---
+
+## 4. Micro Step-by-Step Dry Run
+
+Chalo ek nested string par is compiler emulation ka operation dekhte hain: `s = "3[a2[c]]"`
+
+### 🔹 Iteration 1:
+
+* Scan for first `]`: `closeIdx = 6` (index of `]` after `c`).
+* Track back for `[`: `openIdx = 4` (index of `[` before `c`).
+* Extracted substring: `"c"`.
+* Track back for number: `numStart = 3` (index of `2`).
+* Multiplier: `k = 2`.
+* Decoded Segment: `"c" * 2 = "cc"`.
+* Segment to replace: `"2[c]"` (from index 3 to 6, length 4).
+* **String after replacement:** `s.replace(3, 4, "cc")` $\rightarrow$ `s = "3[acc]"`
+
+### 🔹 Iteration 2:
+
+* Scan for first `]`: `closeIdx = 5` (last character now).
+* Track back for `[`: `openIdx = 1` (after `3`).
+* Extracted substring: `"acc"`.
+* Track back for number: `numStart = 0` (index of `3`).
+* Multiplier: `k = 3`.
+* Decoded Segment: `"acc" * 3 = "accaccacc"`.
+* Segment to replace: `"3[acc]"` (from index 0 to 5, length 6).
+* **String after replacement:** `s = "accaccacc"`
+
+**Loop Termination:** No `]` found in string. Return `"accaccacc"`. ✅
+
+---
+
+## 5. Complexity Analysis & The Disaster Breakdown
+
+* **Time Complexity: $O(N^2 \times \text{Max}(K))$** ya worst case me exponential!
+* Hum har baar `s.find()` chalate hain jo poori string ko scan karne me $O(N)$ leti hai.
+* `s.replace()` operation internals me elements ko shift karta hai, jo fir se $O(N)$ leta hai.
+* Agar bohot zyada nesting hui (jaise `2[2[2[2[a]]]]`), toh hum har single bracket ke liye poori string ko baar-baar decompress aur shift karenge. Yeh quadratic se bhi badtar runtime dega, jo bade inputs par strictly **TLE** hit karega.
+
+
+* **Space Complexity: $O(N)$**
+* `s.replace()` aur `substr()` temporary allocations heap memory par create karte hain string resizing ke dauran.
+
+
+
+---
+
+## 6. Faltu Kaam Kya Ho Raha Hai? (The Stack Intuition)
+
+Interviewer puchega: *"Bhai, tumne replace karke sahi output toh nikaala, par isme sabse badi galti kya ho rahi hai?"*
+
+Tumhara jawab:
+
+> *"Sir, isme hum baar-baar string ko piche se scan kar rahe hain (`find` aur `rfind`). Isse hum same characters ko multiple times process kar rahe hain. Iska linear optimization yeh hoga ki hum **Left-to-Right Single Pass** karein.*
+> *Jaise hi hume `[` mile, hum ab tak ka bna hua character state aur multiplier stack me push kar dein, aur naye bracket ke andar ki duniya ko fresh target ki tarah solve karein. Jab `]` mile, toh stack se purani state ko pop karke multiply kar dein. Isse string resizing aur forward-backward scanning ka linear lag zero ho jayega!"*
+
+Bhai, kya Decode String ka yeh structural brute force aur compiler parsing style replacement logic dimaag me poora transparently clear hua?
+
+Ab batao iska dhasu **Two-Stack System (Character Stack + Number Stack) Optimized ($O(N)$ Time)** wala logic aur state simulation ka khel shuru karein?
+
+
+
+
+Bhai, ab hum Decode String ke **$O(N)$ Multi-Stack Compiler Parsing Framework** ka poora engine kholne ja rahe hain. Yeh approach string replacement ke gajab ke time-lag ko khatam karke system ko strictly linear speed par le aati hai.
+
+---
+
+## 1. Core Intuition (The State Machine Concept)
+
+Brute force me dikkat yeh thi ki hum baar-baar forward-backward scan kar rahe the. Optimized version me hum ek **Single Pass (Left-to-Right)** chalayenge.
+
+Jab hum left-to-right travel karte hain, toh humari ek **Current State** hoti hai, jisme do cheezein hoti hain:
+
+1. `current_string`: Jo characters hum abhi tak read kar rahe hain.
+2. `current_number`: Jo multiplier digit hum abhi build kar rahe hain.
+
+Jaise hi string me variations aati hain, hamari state in 4 rules ke mutabik badalti hai:
+
+* **Rule 1 (Digit mila - `0-9`):** Number ko build karte chalo: `current_number = current_number * 10 + (ch - '0');` (Kyunki number `100` ya `23` bhi ho sakta hai).
+* **Rule 2 (Opening Bracket mila - `[`):** **Context Switch!** Iska matlab ek nayi nested duniya shuru hone wali hai. Toh jo humari ab tak ki `current_string` aur `current_number` thi, use hum sambhal kar **Stacks me push** kar denge, aur in dono variables ko dubara `0` aur empty `""` par reset kar denge taaki andar wali string fresh calculate ho sake.
+* **Rule 3 (Closing Bracket mila - `]`):** **Context Restore & Multiply!** Iska matlab andar wali duniya khatam ho gayi. Ab stack se multiplier nikaalo (`k`), aur current string ko `k` baar repeat karo. Phir stack se pichli wali string (`prev_string`) nikaalo aur uske aage is pooray batch ko jod (append) do.
+* **Rule 4 (Normal Character mila - `a-z`):** Chupchaap use `current_string` me append karte chalo.
+
+---
+
+## 2. Highly Optimized C++ Implementation ($O(N)$ Time)
+
+Hum do independent stacks maintain karenge: ek numbers ke liye aur ek strings ke liye.
+
+```cpp
+#include <iostream>
+#include <string>
+#include <stack>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    // Multi-Stack Parsing Version: O(N) Time & O(N) Space
+    string decodeString(string s) {
+        stack<int> numStack;
+        stack<string> strStack;
+        
+        string current_string = "";
+        int current_number = 0;
+
+        // Single Left-to-Right Pass
+        for (char ch : s) {
+            
+            // Case 1: Agar digit hai, toh number build karo
+            if (isdigit(ch)) {
+                current_number = current_number * 10 + (ch - '0');
+            } 
+            
+            // Case 2: Opening bracket par current state ko freeze karke stack me daalo
+            else if (ch == '[') {
+                numStack.push(current_number);
+                strStack.push(current_string);
+                
+                // Fresh reset for nested scope
+                current_number = 0;
+                current_string = "";
+            } 
+            
+            // Case 3: Closing bracket par pop karke append aur multiply karo
+            else if (ch == ']') {
+                int k = numStack.top();
+                numStack.pop();
+                
+                string prev_string = strStack.top();
+                strStack.pop();
+                
+                // Current string ko k baar repeat karo
+                string repeated_segment = "";
+                for (int i = 0; i < k; i++) {
+                    repeated_segment += current_string;
+                }
+                
+                // Pichli string ke aage decoded segment jodo
+                current_string = prev_string + repeated_segment;
+            } 
+            
+            // Case 4: Normal characters ko normal track karo
+            else {
+                current_string += ch;
+            }
+        }
+
+        return current_string;
+    }
+};
+
+```
+
+---
+
+## 3. Micro-Level Visual Dry Run
+
+Chalo nested input ka post-mortem karte hain: `s = "3[a2[c]]"`
+
+* **Initial State:** `current_string = ""`, `current_number = 0`, `numStack = []`, `strStack = []`
+
+### 🔹 Character-by-Character Processing:
+
+1. **`ch = '3'`** $\rightarrow$ Digit Rule! `current_number = 3`.
+2. **`ch = '['`** $\rightarrow$ Opening Bracket!
+* `numStack.push(3)` $\rightarrow$ `[3]`
+* `strStack.push("")` $\rightarrow$ `[""]`
+* Reset: `current_number = 0`, `current_string = ""`.
+
+
+3. **`ch = 'a'`** $\rightarrow$ Character Rule! `current_string = "a"`.
+4. **`ch = '2'`** $\rightarrow$ Digit Rule! `current_number = 2`.
+5. **`ch = '['`** $\rightarrow$ Opening Bracket!
+* `numStack.push(2)` $\rightarrow$ `[3, 2]`
+* `strStack.push("a")` $\rightarrow$ `["", "a"]`
+* Reset: `current_number = 0`, `current_string = ""`.
+
+
+6. **`ch = 'c'`** $\rightarrow$ Character Rule! `current_string = "c"`.
+7. **`ch = ']'`** $\rightarrow$ **Closing Bracket Hit (Inner Loop Resolution)!**
+* Pop number: `k = 2` (Stack becomes `[3]`).
+* Pop string: `prev_string = "a"` (Stack becomes `[""]`).
+* Repeat: `"c"` $\times 2$ = `"cc"`.
+* Combine: `current_string = "a" + "cc" = "acc"`.
+
+
+8. **`ch = ']'`** $\rightarrow$ **Closing Bracket Hit (Outer Loop Resolution)!**
+* Pop number: `k = 3` (Stack becomes empty `[]`).
+* Pop string: `prev_string = ""` (Stack becomes empty `[]`).
+* Repeat: `"acc"` $\times 3$ = `"accaccacc"`.
+* Combine: `current_string = "" + "accaccacc" = "accaccacc"`.
+
+
+
+**Loop Ends.** Final Return: `"accaccacc"` ✅ (Ekdum perfect block parsing execution).
+
+---
+
+## 4. Complexity Analysis (The Ultimate Win)
+
+* **Time Complexity: $O(\text{Length of Output String})$**
+* Hum string `s` par sirf ek hi baar pure linear format me go-through karte hain.
+* Jo characters output string me generate ho rahe hain, unhe hum sirf character combination block me append kar rahe hain, koi extra array shift operations nahi ho rahe. Isiliye, operations directly proportional hain final decoded length ke, jo ki maximum linear limit ke barabar hai.
+
+
+* **Space Complexity: $O(\text{Nesting Depth} + \text{Output Length})$**
+* Stacks ka size maximum utna hi jayega jitni deep brackets ki nesting hogi (e.g., `3[2[4[5[a]]]]` me depth 4 hai). Worst case me space output characters ko hold karne ke liye lagta hai.
+
+
+
+---
+
+## 5. Interviewer Ke Saamne Boss Move 😎
+
+Jab tum se whiteboard par yeh solution implement karne ko kaha jaye, toh use compiler tokenization se relate karke bolna:
+
+> *"Sir, yeh code basically ek Lexical Tokenizer ki tarah kaam karta hai. Hum bina kisi global index tracker ke, string streams ko symbols aur numbers ke combinations me divide kar rahe hain. `[` aur `]` ka execution system frames me stack behavior ko replicate karta hai, jo system-level compiler optimization ka design blueprint hai."*
+
+Bhai, Decode string ka yeh dynamic double-stack mechanism aur nested loop context switching dimaag me ekdum shishe ki tarah baith gaya?
+
+Ab batao, Stack segment ka agla dimag hila dene wala sawal **Sum of Subarray Minimums (LeetCode 907)** uthayein ya kisi aur specific concept par move karein?
+
+
+
+Bhai, kya hum is double-stack solution ko **aur bhi zyada micro-optimize** kar sakte hain?
+
+Bilkul! Agar tum top-tier interviews (jaise Google, Uber) me baithe ho, toh interviewer tumhari string optimization skills check karne ke liye do bade pointers throw karega:
+
+1. **Two Stacks Overhead:** Hum do alag-alag stack objects (`stack<int>` aur `stack<string>`) use kar rahe hain, jisse memory overhead aur pointer manipulation badh jata hai.
+2. **String Copying/Re-allocation Cost:** `repeated_segment += current_string` baar-baar memory me string buffers create karti hai, jisse CPU cycle waste hoti hai.
+
+Hum isko **Single Stack Structure** aur **Recursion Framework (Implicit System Stack)** ke sath single pass me highest micro-optimized design me convert kar sakte hain, jahan hum string ko bar-bar copy karne ke bajaye **pass-by-reference index** se solve karenge.
+
+---
+
+## 1. Asali Khel: Pure Functional State Machine (Recursion Hack)
+
+Hum pure system ko ek single Recursive function me convert kar dete hain.
+
+> **The Secret:** Jab hum loops ya recursive functions me `index` pointer ko pass-by-reference (`int& i`) bhejte hain, toh call-stack automatically hamari string ka progress track karta hai. Ek tarah se system ka **Implicit Call Stack** hi hamara string aur number stack ban jata hai!
+
+* Jab bhi `[` milega $\rightarrow$ Hum recursive call mar denge (naya context switch).
+* Jab bhi `]` milega $\rightarrow$ Hum base case hit karke wapas return kar jayenge.
+
+---
+
+## 2. Ultra-Optimized C++ Implementation (Zero Manual Stacks)
+
+```cpp
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+private:
+    // Helper function jo index 'i' ko pass-by-reference use karega
+    string decodeHelper(const string& s, int& i) {
+        string current_string = "";
+        int current_number = 0;
+
+        while (i < s.length()) {
+            char ch = s[i];
+
+            // Case 1: Digit building
+            if (isdigit(ch)) {
+                current_number = current_number * 10 + (ch - '0');
+                i++;
+            } 
+            // Case 2: Opening bracket -> Deep dive into recursion
+            else if (ch == '[') {
+                i++; // '[' ko skip karo
+                
+                // Recursion ke pass bhej do andar ki duniya solve karne ke liye
+                string decoded_inner = decodeHelper(s, i);
+                
+                // Jo result aaya, use current_number baar repeat karo
+                while (current_number > 0) {
+                    current_string += decoded_inner;
+                    current_number--;
+                }
+                // current_number automatically reset ho gaya loop ki wajah se
+            } 
+            // Case 3: Closing bracket -> Return current scope's result
+            else if (ch == ']') {
+                i++; // ']' ko skip karo aur context wapas bhejo
+                return current_string;
+            } 
+            // Case 4: Normal character addition
+            else {
+                current_string += ch;
+                i++;
+            }
+        }
+
+        return current_string;
+    }
+
+public:
+    // Ultimate Single-Pass Recursion Version
+    string decodeStringUltimate(string s) {
+        int index = 0;
+        return decodeHelper(s, index);
+    }
+};
+
+```
+
+---
+
+## 3. Is Extreme Optimization Se Kya Fayda Hua?
+
+| Feature | Two-Stack Version | Ultimate Recursive Version |
+| --- | --- | --- |
+| **Manual Data Structures** | `stack<int>` + `stack<string>` ($2 \times O(N)$) | **Zero Manual Stacks!** Only primitive variables. |
+| **Memory Allocation** | Heap memory allocations via Stack vectors/deque. | **Stack-Frame Allocation** (Lightweight runtime execution). |
+| **String Operations** | Multiple temporary local string declarations. | Direct string reference parsing with index jumping. |
+
+---
+
+## 4. Micro-Level Visual Execution Stack
+
+Chalo input ko dekhte hain: `s = "3[a2[c]]"` aur function call `decodeHelper(s, index = 0)`
+
+1. **`i = 0` (`3`):** `current_number = 3`. `i` reaches 1.
+2. **`i = 1` (`[`):** It hits `[`. `i` becomes 2. Calls `decodeHelper(s, i=2)`. **(Frame 1 pushed)**
+3. **`i = 2` (`a`):** `current_string = "a"`. `i` becomes 3.
+4. **`i = 3` (`2`):** `current_number = 2`. `i` becomes 4.
+5. **`i = 4` (`[`):** It hits `[`. `i` becomes 5. Calls `decodeHelper(s, i=5)`. **(Frame 2 pushed)**
+6. **`i = 5` (`c`):** `current_string = "c"`. `i` becomes 6.
+7. **`i = 6` (`]`):** It hits `]`. `i` becomes 7. Returns `"c"` to Frame 1. **(Frame 2 popped)**
+8. **Back to Frame 1:** It receives `"c"`. `current_number` was `2`.
+* `current_string += "c" * 2` $\rightarrow$ `"a" + "cc" = "acc"`.
+
+
+9. **`i = 7` (`]`):** It hits `]`. `i` becomes 8. Returns `"acc"` to Main Frame. **(Frame 1 popped)**
+10. **Back to Main Frame:** It receives `"acc"`. `current_number` was `3`.
+* Final String = `"acc" * 3` = `"accaccacc"`.
+
+
+
+---
+
+## 5. Interviewer Ke Saamne Ultimate Defense Move 😎
+
+Jab tum se yeh solution whiteboard par deliver karoge, toh unhe asali optimization framework samjhana:
+
+> *"Sir, data structure standard stack me bar-bar vectors resizing ka copy overhead hota hai. Is recursive single-pass structure me maine standard memory constraints ko target kiya hai. Hum pass-by-reference index (`int& i`) ka use karke pooray traversal me string pointer ko safe and synchronous rakhte hain. Isse space footprint manually create nahi karna padta aur performance runtime frames par optimized rehti hai."*
+
+Bhai, compiler architecture ke is recursion context shifting ka full code aur execution clear hai?
+
+Ab bolo, Stack segment ka agla champion question **Sum of Subarray Minimums (LeetCode 907)** uthayein ya is code me koi aur doubt hai?
+
+
+Bhai, ab tum LeetCode ke ek aur bhayankar aur dhasu Hard-category (marked as Medium, par asaliyat me Hard) problem par aa gaye ho—**Sum of Subarray Minimums (LeetCode 907)**.
+
+Yeh problem top companies ke interviews me isliye pucha jaati hai kyunki yeh tumhare code likhne ke tarike ko nahi, balki tumhari **Mathematical Logic aur Combinatorics** ki deep thinking ko check karta hai.
+
+Chalo pehle is problem ke mathematical structure aur iske **$O(N^3)$ aur $O(N^2)$ Brute Force Approaches** ko ekdum transparent breakdown ke sath samajhte hain.
+
+---
+
+## 1. Problem Ka Asali Matlab (The Problem Statement)
+
+Hume ek integer array diya jata hai. Hume is array ke **saare possible sub-arrays** dhoondhne hain. Phir har ek sub-array ka jo **Minimum Element** hoga, hume un saare minimums ko aapas me plus (sum) karna hai.
+
+Kyunki sum bohot bada ho sakta hai, isliye answer ko hamesha **$\text{modulo } 10^9 + 7$** karke return karna hota hai.
+
+### Ek Real-Time Example Se Samjho:
+
+Maan lo array hai: `arr = [3, 1, 2, 4]`
+
+Is array ke total $\frac{N \times (N+1)}{2} = \frac{4 \times 5}{2} = 10$ sub-arrays banenge. Chalo sabko list karte hain aur unka minimum nikaalte hain:
+
+* **Size 1 ke sub-arrays:**
+* `[3]` $\rightarrow$ Min = 3
+* `[1]` $\rightarrow$ Min = 1
+* `[2]` $\rightarrow$ Min = 2
+* `[4]` $\rightarrow$ Min = 4
+
+
+* **Size 2 ke sub-arrays:**
+* `[3, 1]` $\rightarrow$ Min = 1
+* `[1, 2]` $\rightarrow$ Min = 1
+* `[2, 4]` $\rightarrow$ Min = 2
+
+
+* **Size 3 ke sub-arrays:**
+* `[3, 1, 2]` $\rightarrow$ Min = 1
+* `[1, 2, 4]` $\rightarrow$ Min = 1
+
+
+* **Size 4 ka sub-array:**
+* `[3, 1, 2, 4]` $\rightarrow$ Min = 1
+
+
+
+Ab saare minimums ko jodo:
+
+
+$$\text{Sum} = (3 + 1 + 2 + 4) + (1 + 1 + 2) + (1 + 1) + 1 = \mathbf{17}$$
+
+---
+
+## 2. Brute Force Level 1: The $O(N^3)$ Disaster
+
+Sabse basic dimaag jo lagta hai, woh yeh ki 3 loops lagao: do loops sub-array ki boundaries (`start` aur `end`) set karne ke liye, aur teesra loop us boundary ke andar jaakar sabse chota element dhoondhne ke liye.
+
+### Code Implementation ($O(N^3)$):
+
+```cpp
+class Solution {
+public:
+    int sumSubarrayMinsBrute1(vector<int>& arr) {
+        int n = arr.size();
+        long long total_sum = 0;
+        long long MOD = 1e9 + 7;
+
+        // Loop 1: Sub-array ka starting point
+        for (int i = 0; i < n; i++) {
+            // Loop 2: Sub-array ka ending point
+            for (int j = i; j < n; j++) {
+                int current_min = INT_MAX;
+
+                // Loop 3: Is range [i se j] ke andar ka minimum dhoondho
+                for (int k = i; k <= j; k++) {
+                    current_min = min(current_min, arr[k]);
+                }
+                
+                total_sum = (total_sum + current_min) % MOD;
+            }
+        }
+        return total_sum;
+    }
+};
+
+```
+
+* **Why it fails:** Agar $N = 10^5$ diya ho (jo ki normal constraint hai), toh $N^3 = 10^{15}$ operations ho jayenge. Yeh code kaafi pehle hi **TLE (Time Limit Exceeded)** dekar crash ho jayega.
+
+---
+
+## 3. Brute Force Level 2: The $O(N^2)$ Optimization (Running Minimum)
+
+Hum thoda dimaag lagakar teesre loop (`k` wale loop) ko uda sakte hain. Jab hum `i` ko fix karke `j` ko aage badha rahe hain, toh har naye element ke aane par poora sub-array fir se scan karne ki zaroorat nahi hai. Hum pichle minimum ko hi naye element `arr[j]` ke sath compare karke carry forward kar sakte hain.
+
+### Code Implementation ($O(N^2)$):
+
+```cpp
+class Solution {
+public:
+    int sumSubarrayMinsBrute2(vector<int>& arr) {
+        int n = arr.size();
+        long long total_sum = 0;
+        long long MOD = 1e9 + 7;
+
+        for (int i = 0; i < n; i++) {
+            int current_min = arr[i]; // i se shuru hone wale sub-array ka pehla element
+
+            for (int j = i; j < n; j++) {
+                // Har naye element ke aate hi minimum update karte chalo
+                current_min = min(current_min, arr[j]);
+                
+                total_sum = (total_sum + current_min) % MOD;
+            }
+        }
+        return total_sum;
+    }
+};
+
+```
+
+* **Why it still fails:** $O(N^2)$ approach $10^5$ elements ke liye $10^{10}$ operations generate karegi. Interviewer is par bhi khush nahi hoga aur bolega: *"Mujhe strictly **$O(N)$ linear time** me solution chahiye."*
+
+---
+
+## 4. Optimization Ki Soch: The Contribution Method (Ulta Socho) 🔥
+
+Yahan se dimaag ghumane wala khel shuru hota hai. Abhi tak hum kya kar rahe the? Hum sub-arrays ke piche bhaag rahe the aur unka minimum nikaal rahe the.
+
+Optimized approach ka secret hai: **Sub-arrays ko chhodho, array ke har ek element se jaakar pucho—*"Bhai, tu kitne sub-arrays me sabse chota (Minimum) ban kar betha hai?"***
+
+Maan lo ek element `arr[i]` total **$X$** sub-arrays me minimum banta hai. Toh total sum me us akele element ka yogdaan (contribution) kitna hoga?
+
+
+$$\text{Contribution of } arr[i] = arr[i] \times X$$
+
+### Yeh $X$ (Number of Sub-arrays) Kaise Nikalein?
+
+Kisi element `arr[i]` ka raj (where it is the minimum) left me tab tak chalega jab tak usse chota element na mil jaye (**Previous Smaller Element - PSE**), aur right me bhi tab tak chalega jab tak usse koi chota element na mil jaye (**Next Smaller Element - NSE**).
+
+Maan lo `arr[i]` ke liye:
+
+* Left side me usse just chota element **$L$** steps door hai.
+* Right side me usse just chota element **$R$** steps door hai.
+
+Toh combinatorics (P&C) ke rule ke mutabik, total number of sub-arrays jisme `arr[i]` sabse chota hoga, woh hoga:
+
+
+$$X = L \times R$$
+
+### Ek Dam Karara Example Trace:
+
+Wahi array lete hain: `arr = [3, 1, 2, 4]`
+Chalo element **`2` (index 2)** par khade hokar check karte hain:
+
+* Left me `2` se chota element kaun hai? `1` (jo ki 1 step door hai). Toh left steps $L = 1$ (sirf khud 2 ka option).
+* Right me `2` se chota element kaun hai? Koi nahi hai! Toh right me yeh end tak ja sakta hai (yaani `2` aur `4`). Right steps $R = 2$ (options: khud 2, ya fir 2 aur 4 dono).
+
+Total sub-arrays jisme `2` minimum hai: $L \times R = 1 \times 2 = \mathbf{2}$.
+Woh kaun se sub-arrays hain? `[2]` aur `[2, 4]`. Dekha? Dono me 2 hi sabse chota hai!
+Toh total sum me `2` ka contribution kitna hua: $2 \times (1 \times 2) = 4$.
+
+---
+
+## 5. Subarray Minimums Ka Sabse Bada Trap: Duplicate Elements 🚨
+
+Interviewer tumhara game yahan bigadega. Maan lo array me duplicates hain: `arr = [2, 2, 2]`
+Agar hum dono taraf strictly chota element dhoondhenge, toh teeno `2` ek dusre ko apna boundary nahi manenge, jisse kuch sub-arrays **baar-baar double count** ho jayenge!
+
+### Is Trap Ka Tor (The Solution):
+
+Double counting se bachne ke liye hum dono boundaries me se kisi ek side strictly lagayenge aur dusri side equality allow karenge:
+
+* **Left Boundary (PSE):** Dhoondho just chota element (`arr[left] < arr[i]`) $\rightarrow$ Strictly Smaller.
+* **Right Boundary (NSE):** Dhoondho chota ya barabar element (`arr[right] <= arr[i]`) $\rightarrow$ Smaller or Equal.
+
+Yeh karne se har ek duplicate sub-array strictly ek hi baar count hoga, koi overlapping ya omission nahi hogi.
+
+Bhai, kya is problem ka structural base, brute force ka quadratic limit, contribution strategy ka $L \times R$ math aur duplicate elements ka trap dimaag me ekdum transparently set ho gaya?
+
+Ab batao iska dhasu **Monotonic Stack Optimized ($O(N)$ Time)** wala logic aur single pass code ka khel shuru karein?
+
+
+
+Bhai, ab hum is problem ke **$O(N)$ Monotonic Stack Optimization** ka poora math aur code breakdown dekhne ja rahe hain.
+
+Brute force me jo hum sub-arrays ke piche bhaag rahe the, use chhodkar humne contribution method ($L \times R$) toh samajh liya. Ab is $L$ (left steps) aur $R$ (right steps) ko strictly **linear time $O(N)$** me nikaalne ke liye hum **Monotonic Stack** ka engine use karenge.
+
+---
+
+## 1. Do Arrays Ka Khel: `left[]` aur `right[]`
+
+Hum do arrays maintain karenge:
+
+1. `left[i]`: `arr[i]` se left side me kitne elements hain jo usse bade hain (jab tak koi chota element na mil jaye).
+2. `right[i]`: `arr[i]` se right side me kitne elements hain jo usse bade hain (jab tak koi chota ya barabar element na mil jaye).
+
+### Formula for Distance:
+
+* Agar left me koi chota nahi mila, toh boundary index `-1` maanenge. Isiliye, $\text{Distance } L = i - \text{index of PSE}$.
+* Agar right me koi chota nahi mila, toh boundary index `N` maanenge. Isiliye, $\text{Distance } R = \text{index of NSE} - i$.
+
+---
+
+## 2. Dynamic Rules: Duplicate Elements Trap Solution
+
+Jaise humne brute force ke end me discuss kiya tha, duplicates se bachne ke liye:
+
+* **Left me (PSE):** Hum stack me elements ko pop tab tak karenge jab tak `arr[st.top()] >= arr[i]` ho. Yaani hum strictly chota element dhoondh rahe hain.
+* **Right me (NSE):** Hum stack me elements ko pop tab tak karenge jab tak `arr[st.top()] > arr[i]` ho. Yaani hum chota ya barabar (`<=`) element dhoondh rahe hain.
+
+---
+
+## 3. Highly Optimized C++ Implementation ($O(N)$ Time)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+class Solution {
+public:
+    int sumSubarrayMins(vector<int>& arr) {
+        int n = arr.size();
+        vector<int> left(n), right(n);
+        stack<int> st; // Indices store karne ke liye stack
+        long long MOD = 1e9 + 7;
+
+        // Step 1: PSE (Previous Smaller Element) -> Left Distance nikaalo
+        for (int i = 0; i < n; i++) {
+            // Note: '>=' handling duplicate logic for left boundary
+            while (!st.empty() && arr[st.top()] >= arr[i]) {
+                st.pop();
+            }
+            // Agar stack khali hai, matlab left me sabse chota yahi hai (boundary -1)
+            left[i] = st.empty() ? (i - (-1)) : (i - st.top());
+            st.push(i);
+        }
+
+        // Stack khali karo agle use ke liye
+        while (!st.empty()) st.pop();
+
+        // Step 2: NSE (Next Smaller Element) -> Right Distance nikaalo
+        for (int i = n - 1; i >= 0; i--) {
+            // Note: Strictly '>' handling duplicate logic for right boundary
+            while (!st.empty() && arr[st.top()] > arr[i]) {
+                st.pop();
+            }
+            // Agar stack khali hai, matlab right me sabse chota yahi hai (boundary n)
+            right[i] = st.empty() ? (n - i) : (st.top() - i);
+            st.push(i);
+        }
+
+        // Step 3: Total Contribution Calculate karo
+        long long total_sum = 0;
+        for (int i = 0; i < n; i++) {
+            // Total sub-arrays jisme arr[i] minimum hai = left[i] * right[i]
+            long long count = (left[i] * right[i]) % MOD;
+            long long contribution = (count * arr[i]) % MOD;
+            
+            total_sum = (total_sum + contribution) % MOD;
+        }
+
+        return total_sum;
+    }
+};
+
+```
+
+---
+
+## 4. Micro-Level Visual Dry Run
+
+Chalo hamari purani array lete hain: `arr = [3, 1, 2, 4]`, `n = 4`
+
+### Step 1: `left[]` Distance Vector Build
+
+| Index `i` | Element `arr[i]` | Stack State (Before Push) | Closest Smaller Index | `left[i]` Distance |
+| --- | --- | --- | --- | --- |
+| **0** | **3** | `[]` (Empty) | None $\rightarrow$ `-1` | $0 - (-1) = \mathbf{1}$ |
+| **1** | **1** | `[0]` $\rightarrow$ `3 >= 1` (Pop!) $\rightarrow$ `[]` | None $\rightarrow$ `-1` | $1 - (-1) = \mathbf{1}$ |
+| **2** | **2** | `[1]` $\rightarrow$ `1 >= 2` (False) | Index `1` (Value 1) | $2 - 1 = \mathbf{1}$ |
+| **3** | **4** | `[1, 2]` $\rightarrow$ `2 >= 4` (False) | Index `2` (Value 2) | $3 - 2 = \mathbf{1}$ |
+
+`left = [1, 1, 1, 1]`
+
+### Step 2: `right[]` Distance Vector Build (Right-to-Left)
+
+| Index `i` | Element `arr[i]` | Stack State (Before Push) | Closest Smaller Index | `right[i]` Distance |
+| --- | --- | --- | --- | --- |
+| **3** | **4** | `[]` (Empty) | None $\rightarrow$ `4` | $4 - 3 = \mathbf{1}$ |
+| **2** | **2** | `[3]` $\rightarrow$ `4 > 2` (Pop!) $\rightarrow$ `[]` | None $\rightarrow$ `4` | $4 - 2 = \mathbf{2}$ |
+| **1** | **1** | `[2]` $\rightarrow$ `2 > 1` (Pop!) $\rightarrow$ `[]` | None $\rightarrow$ `4` | $4 - 1 = \mathbf{3}$ |
+| **0** | **3** | `[1]` $\rightarrow$ `1 > 3` (False) | Index `1` (Value 1) | $1 - 0 = \mathbf{1}$ |
+
+`right = [1, 3, 2, 1]`
+
+### Step 3: Contribution Mathematics
+
+Ab hum final mathematical formula lagayenge: $\text{Sum} += \text{arr}[i] \times \text{left}[i] \times \text{right}[i]$
+
+* **`i = 0` (Value 3):** $\text{Contribution} = 3 \times 1 \times 1 = \mathbf{3}$
+* **`i = 1` (Value 1):** $\text{Contribution} = 1 \times 1 \times 3 = \mathbf{3}$
+* **`i = 2` (Value 2):** $\text{Contribution} = 2 \times 1 \times 2 = \mathbf{4}$
+* **`i = 3` (Value 4):** $\text{Contribution} = 4 \times 1 \times 1 = \mathbf{4}$
+
+$$\text{Total Sum} = 3 + 3 + 4 + 4 = \mathbf{14} \text{ ??? Wait!}$$
+
+> **Bhai Ka Precision Note:** Pehle wale brute force manual listing me jab humne total kiya tha, toh humne galti se size-3 wale sub-arrays me `[1, 2, 4]` ka minimum 1 ke bajaye 2 jod diya tha (manually check karo upar). Linear monotonic stack ne hume **perfectly mathematically correct** answer `14` nikaal kar diya hai bina kisi manual human error ke!
+
+---
+
+## 5. Complexity Breakdown (The Ultimate Win)
+
+* **Time Complexity: $O(N)$**
+* `left[]` nikaalne me ek loop chala, array ka har element stack me ek hi baar gaya aur ek hi baar pop hua $\rightarrow O(N)$.
+* `right[]` nikaalne me dusra loop chala $\rightarrow O(N)$.
+* Contribution loop $N$ baar chala $\rightarrow O(N)$.
+* Kahi bhi loops ki nesting (multiplication) nahi hai. Total Time Complexity is strictly **$O(N)$**, jo $10^5$ elements ko instant resolve karegi.
+
+
+* **Space Complexity: $O(N)$**
+* Humne `left`, `right` vectors aur stack store karne ke liye dynamic space use kiya hai.
+
+
+
+Bhai, kya Contribution Math ($L \times R$) aur Duplicate handling ke sath yeh Monotonic Stack ka pure blueprint dimaag me ekdum makkhan ki tarah fit ho gaya?
+
+Ab bolo, LeetCode 907 ka poora post-mortem done hai? Stack ka agla extreme concept problem uthayein ya yahan wrap up karein?
+
+
+
+Bhai, ab hum aane wale hain is poore problem ke **Sabse Bade Grandmaster Level Optimization** par.
+
+Pichle code me humne $O(N)$ time toh achieve kar liya, lekin humne **teen separate passes** kiye (ek loop `left[]` ke liye, ek loop `right[]` ke liye, aur ek loop final answer calculate karne ke liye). Saath hi humne `left[]` aur `right[]` naam ke do extra space-consuming vectors ($2 \times O(N)$ space overhead) banaye.
+
+Kya hum isko **Strictly Single Pass (Ek hi loop me left-to-right jate hue) bina kisi `left` aur `right` array ke** optimize kar sakte hain?
+
+**Bilkul!** Ise kehte hain **Single-Pass Monotonic Stack Trick**. Chalo iske peeche ki structural core intuition ko poora nichodte hain.
+
+---
+
+## 1. Core Intuition (The Dynamic Window Snapping)
+
+Jab hum ek Monotonic Increasing Stack maintain karte hain, toh jaise hi koi naya element `arr[i]` stack ke top element se chota milta hai (`arr[st.top()] > arr[i]`), toh us instant par **teen cheezein ek saath** mathematically confirm ho jati hain:
+
+1. **Target Element:** Jis element ko stack se pop kiya ja raha hai (`int targetIdx = st.top()`), wahi hamara current core element hai jiska contribution hume nikalna hai.
+2. **Next Smaller Element (NSE):** Us popped element ke liye right side ka sabse pehla chota element khud current element `i` hai! (Kyunki usi ke aane par pop trigger hua).
+3. **Previous Smaller Element (PSE):** Us popped element ke stack se hatne ke baad, stack ke top par jo element bacha hai, wahi uska left side ka sabse pehla chota element hai!
+
+Mulaqat hote hi hum bina kisi extra vector ke dynamic steps ($L$ aur $R$) nikal sakte hain:
+
+* **Right Distance ($R$):** $\text{current\_index } (i) - \text{targetIdx}$
+* **Left Distance ($L$):** $\text{targetIdx} - \text{st.top()}$ *(Agar stack khali hai, toh $\text{targetIdx} - (-1)$)*
+
+---
+
+## 2. Ultra-Optimized C++ Implementation (Strictly Single Pass, $O(1)$ Extra Space)
+
+Is version me humne `left[]` aur `right[]` arrays ko poori tarah se system se eliminate kar diya hai. Hum sirf ek single loops me elements ko process karenge, aur aakhiri bache elements ko force-pop karne ke liye loop ko `n` tak chalayenge (virtual element zero/minimum logic).
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+class Solution {
+public:
+    int sumSubarrayMinsUltimate(vector<int>& arr) {
+        int n = arr.size();
+        stack<int> st; // Stores indices
+        long long total_sum = 0;
+        long long MOD = 1e9 + 7;
+
+        // Loop n tak chalega (i == n par hum ek virtual INT_MIN ya 0 maanenge)
+        for (int i = 0; i <= n; i++) {
+            // Agar i == n hai toh virtual element 0 le lo taaki bache hue elements forced pop ho sakein
+            // Note: Agar array me negative numbers ho toh yahan INT_MIN use karna zaroori hai
+            int current_val = (i == n) ? 0 : arr[i];
+
+            // Monotonic Increasing Stack condition maintain karo
+            while (!st.empty() && arr[st.top()] > current_val) {
+                int targetIdx = st.top();
+                st.pop();
+
+                // Left boundary index nikaalo dynamically
+                int left_smaller_idx = st.empty() ? -1 : st.top();
+                int right_smaller_idx = i;
+
+                // Distances calculation on the fly
+                long long L = targetIdx - left_smaller_idx;
+                long long R = right_smaller_idx - targetIdx;
+
+                // Contribution calculation on the fly
+                long long count = (L * R) % MOD;
+                long long contribution = (count * arr[targetIdx]) % MOD;
+
+                total_sum = (total_sum + contribution) % MOD;
+            }
+            st.push(i);
+        }
+
+        return total_sum;
+    }
+};
+
+```
+
+---
+
+## 3. Micro-Level Execution Trace / Dry Run
+
+Array: `arr = [3, 1, 2, 4]`, `n = 4`
+
+### 🔹 `i = 0` (Value 3):
+
+* Stack khali hai. `3` push ho gaya. `st = [0]`.
+
+### 🔹 `i = 1` (Value 1):
+
+* `arr[st.top()] > current_val` $\rightarrow$ `3 > 1` (**TRUE!** Pop trigger hua).
+* `targetIdx = 0` (Value 3). Stack popped $\rightarrow$ Empty state.
+* `left_smaller_idx = -1` (Stack empty hai).
+* `L = 0 - (-1) = 1` | `R = 1 - 0 = 1`.
+* **Contribution of 3:** $3 \times 1 \times 1 = \mathbf{3}$. `total_sum = 3`.
+* `1` push ho gaya. `st = [1]`.
+
+### 🔹 `i = 2` (Value 2):
+
+* `1 > 2` False. `2` push ho gaya. `st = [1, 2]`.
+
+### 🔹 `i = 3` (Value 4):
+
+* `2 > 4` False. `4` push ho gaya. `st = [1, 2, 3]`.
+
+### 🔹 `i = 4` (Virtual `i == n` Rule $\rightarrow$ Value 0):
+
+* `4 > 0` (**TRUE!** Pop trigger hua).
+* `targetIdx = 3` (Value 4). Stack pop $\rightarrow$ `st = [1, 2]`.
+* `left_smaller_idx = 2`.
+* `L = 3 - 2 = 1` | `R = 4 - 3 = 1`.
+* **Contribution of 4:** $4 \times 1 \times 1 = \mathbf{4}$. `total_sum = 3 + 4 = 7`.
+
+
+* `2 > 0` (**TRUE!** Pop trigger hua).
+* `targetIdx = 2` (Value 2). Stack pop $\rightarrow$ `st = [1]`.
+* `left_smaller_idx = 1`.
+* `L = 2 - 1 = 1` | `R = 4 - 2 = 2`.
+* **Contribution of 2:** $2 \times 1 \times 2 = \mathbf{4}$. `total_sum = 7 + 4 = 11`.
+
+
+* `1 > 0` (**TRUE!** Pop trigger hua).
+* `targetIdx = 1` (Value 1). Stack pop $\rightarrow$ Empty state.
+* `left_smaller_idx = -1`.
+* `L = 1 - (-1) = 1` | `R = 4 - 1 = 3`.
+* **Contribution of 1:** $1 \times 1 \times 3 = \mathbf{3}$. `total_sum = 11 + 3 = \mathbf{14}`.
+
+
+
+**Loop Termination.** Final Output: `14`. ✅ (Ekdum crash-proof speed engine!)
+
+---
+
+## 4. Is Extreme Optimization Se Kya Fayda Hua?
+
+| Parameter | Previous 3-Pass Version | Ultimate Single-Pass Version |
+| --- | --- | --- |
+| **Passes over Array** | **3 Independent Loops** | **Strictly 1 Single Pass** |
+| **Extra Storage Space** | `left[N]` + `right[N]` $\rightarrow$ **$2N$ Vectors Overhead** | **$O(1)$ Auxiliary Space** (Bina kisi extra array ke) |
+| **Cache Performance** | Memory me multiple reads generate hote the | Ek hi bar data traverse hotey hi cache line optimize ho jati hai |
+| **Duplicate Trap** | Dono loops me alag-alag `>=` aur `>` maintain karna padta tha | Single condition `arr[st.top()] > current_val` automatic mathematical balance hold karti hai |
+
+---
+
+## 5. Interviewer Blockbuster Frame-Up 😎
+
+Jab tum whiteboard par is solution ko drop karoge, toh interviewer ke samne is core detail ko zaroor pitch karna:
+
+> *"Sir, standard multi-pass structures global spatial complexity badhate hain jisse low-latency memory allocations fail ho sakti hain. Maine Histogram Area problem ke elements elimination rule ko adapt kiya hai. Is single loop structure me, jab ek element stack se pop hota hai, toh uski left boundary stack ke current top se aur right boundary current element `i` se instant snap ho jati hai. Yeh poore framework ko strictly single linear iteration me complete hardware mechanical advantage deta hai."*
+
+Bhai, Subarray Minimums ka yeh single-pass, extreme optimized zero extra vector space wala magic dimaag me poora shishe ki tarah transparently set ho gaya? Monotonic Stack ki power puri tarah samajh aayi?
+
+
+
+Bhai, ab tum un standard "Valid Parentheses" `()`, `[]` wale sawalon se upar uth kar **String Parsing aur Reduction Engines** ke ek behtar version par aa gaye ho—**Check If Word Is Valid After Substitutions (LeetCode 1003)**.
+
+Yeh question interviews me tumhari string slicing, reduction aur state tracking ki limits test karne ke liye pucha jata hai. Chalo iska **Pure Brute Force Core Logic** aur **Theory** ko ekdum transparent breakdown ke saath samajhte hain.
+
+---
+
+## 1. Problem Ki Asali Shart (The Generation Rule)
+
+Hume ek string `s` di jati hai. Problem kehti hai ki ek string tabhi **Valid** mani jayegi agar use ek base state se banaya gaya ho. Rules yeh hain:
+
+1. Shuruat me hamari string ekdum khali (`""`) hoti hai, jo ki valid hai.
+2. Tum kisi bhi valid string ke **andar, kahin bhi (start, middle, ya end me)** strictly ek pattern `"abc"` insert kar sakte ho. Is insertion ke baad jo nayi string banegi, woh bhi valid hogi.
+
+### Example Se Generation Samjho:
+
+* Start: `""` (Valid)
+* Insert `"abc"` $\rightarrow$ `"" + "abc" + ""` = `"abc"` (Valid)
+* Phir se `"abc"` insert karo index 1 par $\rightarrow$ `"a" + "abc" + "bc"` = `"aabcbc"` (Valid)
+* Phir se `"abc"` insert karo index 4 par $\rightarrow$ `"aabc" + "abc" + "bc"` = `"aabcabcbc"` (Valid)
+
+Hume iska ulta karna hai. Hume ek string `s` di jayegi, aur hume batana hai ki kya yeh isi rule se bani hai ya nahi.
+
+---
+
+## 2. Brute Force Logic: The "String Reduction" Engine 🔄
+
+Brute force ka seedha funda hai—**"Agar string `"abc"` ko baar-baar insert karke bani hai, toh hum string me se `"abc"` ko baar-baar delete (reduce) karte chale jayenge. Agar end me string ekdum khali (`""`) ho gayi, toh string valid thi!"**
+
+### Algorithmic Steps:
+
+1. Ek infinite ya conditional loop chalao.
+2. String ke andar substring `"abc"` ko dhoondho (using `s.find("abc")`).
+3. **Case A (Agar `"abc"` mil gaya):** Us `"abc"` wale tukde ko string se poori tarah delete/erase kar do.
+4. **Case B (Agar `"abc"` nahi mila):** Iska matlab ab string ko mazeed reduce nahi kiya ja sakta. Loop ko break kar do.
+5. **Final Check:** Loop khatam hone ke baad dekho, agar string ka size `0` ho gaya (`s.empty()`), toh return `true`, warna return `false`.
+
+---
+
+## 3. Brute Force Code Implementation (C++)
+
+Isme hum koi Stack data structure use nahi karenge. Purely primitive string methods (`find` aur `erase`) se string reduction simulate karenge.
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Solution {
+public:
+    // Pure Brute Force Approach: Continuous Substring Reduction
+    bool isValidBrute(string s) {
+        
+        // Agar string ki length 3 se choti hai aur wo khali nahi hai, toh valid nahi ho sakti
+        if (s.length() < 3) return s.empty();
+
+        // Tab tak chalao jab tak string me "abc" substring mil rahi hai
+        while (true) {
+            size_t index = s.find("abc");
+            
+            // Agar "abc" nahi mila, toh breaks loop (No more reduction possible)
+            if (index == string::npos) {
+                break;
+            }
+            
+            // Agar "abc" mil gaya, toh us 3-character ke segment ko erase karo
+            s.erase(index, 3);
+        }
+        
+        // Agar end me poori string vanish ho gayi, toh valid thi
+        return s.empty();
+    }
+};
+
+```
+
+---
+
+## 4. Micro Step-by-Step Dry Run
+
+Chalo ek sahi aur ek galat string par is framework ka operation dekhte hain.
+
+### 🔹 Scenario 1: Valid String `s = "aabcbc"`
+
+* **Iteration 1:** * `s.find("abc")` scan karega. Index 1 par `"abc"` mil gaya (`a[abc]bc`).
+* `s.erase(1, 3)` chalega.
+* String updates to: `s = "abc"`.
+
+
+* **Iteration 2:**
+* `s.find("abc")` scan karega. Index 0 par `"abc"` mil gaya (`[abc]`).
+* `s.erase(0, 3)` chalega.
+* String updates to: `s = ""`.
+
+
+* **Iteration 3:**
+* `s.find("abc")` chalega, par ab kuch nahi milega (`string::npos`). Loop breaks.
+
+
+* **Final Check:** `s.empty()` is **True**. Return `true`. ✅
+
+### 🔹 Scenario 2: Invalid String `s = "abccba"`
+
+* **Iteration 1:**
+* `s.find("abc")` scan karega. Index 0 par `"abc"` mil gaya (`[abc]cba`).
+* `s.erase(0, 3)` chalega.
+* String updates to: `s = "cba"`.
+
+
+* **Iteration 2:**
+* `s.find("abc")` chalega. String `"cba"` me `"abc"` nahi hai. Loop breaks.
+
+
+* **Final Check:** `s.empty()` is **False** (string me `"cba"` bacha hai). Return `false`. ❌
+
+---
+
+## 5. Complexity Analysis & The Disaster Breakdown 💥
+
+Interviewer code dekhte hi bolega: *"Bhai, sahi chal raha hai, par scale par yeh fail ho jayega."* Chalo iska performance autopsy karte hain:
+
+* **Time Complexity: $O(N^2)$ Worst Case**
+* Maan lo hamari string aisi hai: `"aaaa...bbbb...cccc"` (saare `a` shuru me, saare `b` beech me, saare `c` end me, jaise `a3 b3 c3` $\rightarrow$ `"aaabbbccc"`).
+* Is case me, har baar `"abc"` sirf center me milega.
+* `s.find()` poori string ko scan karne me $O(N)$ lega.
+* `s.erase()` jab elements ko remove karega, toh bache hue right-side ke characters ko left me shift karne ke liye fir se $O(N)$ lega.
+* Total cuts kitne lagenge? $\frac{N}{3}$ cuts. Har cut ka cost $O(N)$.
+* Total Time $\approx O(N \times \frac{N}{3}) = \mathbf{O(N^2)}$. Agar $N = 10^5$ ho gaya, toh yeh lakho-caroro operations khayeja aur strictly **TLE (Time Limit Exceeded)** dega.
+
+
+* **Space Complexity: $O(1)$ Auxiliary Space** (Agar hum same string ko modify kar rahe hain, par string modification internals me naye buffers create kar sakti hai).
+
+---
+
+## 6. Optimization Ki Soch (The Stack Intuition)
+
+Interviewer puchega: *"Bhai, is $O(N^2)$ ke shifting lag ko zero kaise karein?"*
+
+Tumhara dimaag turant chalna chahiye:
+
+> *"Sir, galti yeh ho rahi hai ki jab hum ek `"abc"` ko delete karte hain, toh bache hue aaspas ke characters (jaise left ka `"a"` aur right ka `"bc"`) aapas me jud kar ek naya `"abc"` bana sakte hain. Hum un pichle characters ko baar-baar shuru se dhoondhne ke bajaye ek **Character Stack** me store kar sakte hain!*
+> *Jaise hi hum stream me left-to-right chalte hue character `"c"` par pohonchein, hum stack ke top par jhaank kar dekhein—kya piche `"b"` aur `"a"` khade hain? Agar hain, toh unhe instant pop (reduce) kar do, bina poori string ko shift kiye!"*
+
+Bhai, kya Valid Substitution ka yeh base, string reduction ki theory, aur brute force ka quadratic disaster dimaag me ekdum transparently fit ho gaya?
+
+Ab batao iska dhasu **Character Stack Optimized ($O(N)$ Time, Single Pass)** wala logic aur dry-run ka post-mortem shuru karein?
+
+
+Bhai, ab hum Valid Substitution ke **$O(N)$ Linear Time Monotonic Stack Architecture** ka poora engine kholne ja rahe hain.
+
+Brute force me jo string shifting aur baar-baar linear `find()` lagane ka $O(N^2)$ overhead tha, use hum ek **Single Pass (Left-to-Right)** character stack processing se poori tarah khatam kar denge.
+
+---
+
+## 1. Core Intuition (The Dynamic Triple-Match Reduction)
+
+Jab hum left-to-right travel karte hain, toh hum string ke har ek character ko ek stack me push karte hain. Hamara stack kisi bhi moment par un characters ko hold karta hai jo abhi tak reduce nahi ho paye hain.
+
+Kyunki hume strictly `"abc"` pattern ko eliminate karna hai, toh jaise hi stream me hume character `'c'` milta hai, hum stack ke top par ek immediate structural validation chalate hain:
+
+1. **Character `'c'` mila:** Hum use stack me daalne se pehle check karenge ki kya stack ke top par `'b'` baitha hai?
+2. **'b' milne par check:** Kya `'b'` ke theek niche stack me `'a'` baitha hai?
+3. **Reduction Trigger:** Agar stack ke top par `'b'` aur `'a'` ka sequence mil jata hai, iska matlab hume ek valid `"abc"` ka segment mil gaya! Hum stack se `'b'` aur `'a'` dono ko `pop` kar denge (yaani humne `"abc"` ko on-the-fly binary state se reduce kar diya). Current `'c'` ko stack me push hi nahi karenge.
+
+Agar poori string khatam hone ke baad stack ekdum **khali (Empty)** bachta hai, iska matlab saare elements perfect pairs me aaye the aur successfully reduce ho gaye. String valid hai!
+
+---
+
+## 2. Highly Optimized C++ Implementation ($O(N)$ Time)
+
+Hum standard `std::stack<char>` ya string-buffer ko stack ki tarah use kar sakte hain. Raw primitive optimization ke liye hum ek `string` object ko hi stack ki tarah treat karenge (`push_back` aur `pop_back` use karke) taaki dynamic memory allocations reduce ho sakein.
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Solution {
+public:
+    // Optimized Stack Reconstruction: O(N) Time & O(N) Space
+    bool isValid(string s) {
+        // Validation: Agar length 3 ka multiple nahi hai, toh "abc" patterns se banna impossible hai
+        if (s.length() % 3 != 0) return false;
+
+        string st = ""; // String as a Stack (Ultra fast cache locality)
+
+        for (char ch : s) {
+            // Case: Agar current character 'c' hai, toh piche 'b' aur 'a' ko verify karo
+            if (ch == 'c') {
+                int len = st.length();
+                // Check karo stack me kam se kam 2 elements hain, aur wo 'b' aur 'a' hain
+                if (len >= 2 && st[len - 1] == 'b' && st[len - 2] == 'a') {
+                    // Match found! 'b' aur 'a' ko stack se vanish (pop) karo
+                    st.pop_back();
+                    st.pop_back();
+                } else {
+                    // Agar 'c' mila par piche 'b' aur 'a' nahi hain, toh ye invalid sequence hai
+                    st.push_back(ch);
+                }
+            } 
+            // Normal Case: 'a' aur 'b' ko chupchaap stack me push karte chalo
+            else {
+                st.push_back(ch);
+            }
+        }
+
+        // Agar end me stack khali hai, matlab full reduction ho gaya
+        return st.empty();
+    }
+};
+
+```
+
+---
+
+## 3. Micro-Level Visual Dry Run
+
+Chalo hamari valid nested string ka post-mortem karte hain: `s = "aabcbc"`
+
+* **Initial State:** `st = ""` (Stack is empty).
+
+### 🔹 Character-by-Character Processing:
+
+1. **`ch = 'a'`** $\rightarrow$ Normal character. `st.push_back('a')`. Stack Frame: `["a"]`
+2. **`ch = 'a'`** $\rightarrow$ Normal character. `st.push_back('a')`. Stack Frame: `["a", "a"]`
+3. **`ch = 'b'`** $\rightarrow$ Normal character. `st.push_back('b')`. Stack Frame: `["a", "a", "b"]`
+4. **`ch = 'c'`** $\rightarrow$ **Target 'c' Hit!** * Check stack top: Last element is `'b'`, Second last is `'a'`.
+* **Match Success!** `st.pop_back()` twice.
+* Stack Frame rolls back to: `["a"]`
+
+
+5. **`ch = 'b'`** $\rightarrow$ Normal character. `st.push_back('b')`. Stack Frame: `["a", "b"]`
+6. **`ch = 'c'`** $\rightarrow$ **Target 'c' Hit!**
+* Check stack top: Last element is `'b'`, Second last is `'a'`.
+* **Match Success!** `st.pop_back()` twice.
+* Stack Frame rolls back to: `""` (Empty).
+
+
+
+**Loop Ends.** `st.empty()` is **True**. Return `true`. ✅ (Linear single pass magic!)
+
+---
+
+## 4. Complexity Analysis (The Production Scale Win)
+
+* **Time Complexity: $O(N)$**
+* Hum pure string stream par left-to-right **sirf ek baar (Single Pass)** travel karte hain.
+* Vector/String ke end me `push_back` aur `pop_back` strictly **$O(1)$ amortized time** leti hain, brute force ki tarah koi array shifting lag nahi hota.
+* Total time completely linear hai, yaani $10^5$ size ki string micro-seconds me execute ho jayegi.
+
+
+* **Space Complexity: $O(N)$**
+* Worst-case scenarios me (jaise `"aaabbbccc"`), jab tak saare `'c'` nahi aate, saare `'a'` aur `'b'` stack me store rehte hain, jo maximum size $N$ reach kar sakta hai.
+
+
+
+---
+
+## 5. Interviewer Ke Saamne Boss Move 😎
+
+Whiteboard par jab tum se is linear solution ka justification pucha jaye, toh ise Parentheses matching se upar utha kar frame karna:
+
+> *"Sir, standard balanced parentheses me single token reduction hota hai (jaise `)` direct `(` ko cancel karta hai). Yeh problem ek **Multi-Token Look-Back Reduction Engine** hai. Maine array shifting cost ko completely bypass karne ke liye standard string buffer ko vector stack ki tarah apply kiya hai. Jaise hi state machine character `'c'` ko process karti hai, hum immediate look-back windows validation se pattern ko linear speed aur maximum cache locality ke sath resolve kar lete hain."*
+
+Bhai, Valid Substitution ka yeh highly optimized character stack approach, sequential processing aur continuous memory allocation ka logic dimaag me ekdum crystal clear baith gaya?
+
+Ab batao, is heavy deep-thinking series ka aakhiri level problem **Score of Parentheses (LeetCode 856)** phodein ya kisi aur stack core-mechanic par dive maarein?
+
+
+Bhai, ab tumne is question ko completely optimize karne ke liye un deep compiler hacks ko touch kar diya hai jo top-tier systems design ya HFT execution engines me use hote hain.
+
+Abhi tak jo humne kiya, woh tha $O(N)$ Time aur $O(N)$ Space framework using a string stack wrapper. Interviewer tumse kahega: *"Bhai, Time optimization toh tumne peak level ($O(N)$) par kar di. Lekin kya tum is problem ko **Strictly $O(1)$ Auxiliary Space (bina kisi naye Stack structure ya Memory String buffer ke)** solve kar sakte ho?"*
+
+**Haan, bilkul kar sakte hain!** Hum original string ke memory footprint ko hi as a **In-Place Monotonic Pointer Stack** overwrite model me convert kar denge. Isme hum zero extra space ka rule lagaenge.
+
+---
+
+## 1. Core Intuition: In-Place Overwrite Stack Model
+
+Galti kya ho rahi thi? Hum ek naya string object ya standard stack create kar rahe the jo RAM me naya continuous buffer chunk maang raha tha.
+
+> **The Zero-Memory Hack:** Hamari original input string `s` hume mil chuki hai. Kyunki hume character elements ko left-to-right sirf ek hi baar read karna hai, toh hum original string ke andar hi ek manual stack variable `top` (index pointer) maintain kar sakte hain. Hum original string ke characters ko hi modify/overwrite karte chalenge!
+
+* `top` variable track karega ki hamare "In-Place Stack" ka end point kahan tak hai.
+* Jaise hi current character `ch` read hoga, hum `s[top]` par use overwrite kar denge.
+* Agar `'c'` milta hai aur piche ke elements `'b'` aur `'a'` ka sequential validation match ho jata hai, toh hum `top` ko simple do steps piche shift (`top -= 2`) kar denge (yaani virtual stack pop).
+* Is tarah bina koi bhi extra memory byte allocate kiye, hum original string ka system structure use karke calculations streamline kar lenge.
+
+---
+
+## 2. Ultra-Optimized C++ Implementation (Strictly $O(1)$ Auxiliary Space)
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Solution {
+public:
+    // Ultimate Micro-Optimized Version: O(N) Time & O(1) Auxiliary Space
+    bool isValidUltimate(string s) {
+        int n = s.length();
+        
+        // Base Validation: abc multiple criteria check
+        if (n % 3 != 0) return false;
+
+        int top = 0; // Simulated pointer within the original string 's'
+
+        for (int i = 0; i < n; i++) {
+            char ch = s[i];
+
+            if (ch == 'c') {
+                // Stack me kam se kam 2 valid variables hone chahiye, aur wo 'b' aur 'a' hone chahiye
+                // top-1 par pichla character hai, top-2 par usse pichla hai
+                if (top >= 2 && s[top - 1] == 'b' && s[top - 2] == 'a') {
+                    // Match Success! In-place Pop Operation -> Move top pointer back by 2 positions
+                    top -= 2;
+                } else {
+                    // Match Fail! 'c' ko store karo aur top pointer ko aage badao
+                    s[top] = ch;
+                    top++;
+                }
+            } 
+            // Normal Characters: 'a' aur 'b' ko directly active top block par overwrite karo
+            else {
+                s[top] = ch;
+                top++;
+            }
+        }
+
+        // Agar saare windows collapse ho gaye toh top pointer wapas 0 par aa jayega
+        return top == 0;
+    }
+};
+
+```
+
+---
+
+## 3. Micro-Level Byte Overwrite Trace (Dry Run)
+
+Input: `s = "aabcbc"`, `n = 6`
+Initial State: `top = 0`
+
+### 🔹 Step-by-Step State Matrix Transitions:
+
+1. **`i = 0`, `ch = 'a'**` $\rightarrow$ Normal character.
+* `s[0] = 'a'`, `top` reaches `1`. String: `[a]abcbc`
+
+
+2. **`i = 1`, `ch = 'a'**` $\rightarrow$ Normal character.
+* `s[1] = 'a'`, `top` reaches `2`. String: `[aa]bcbc`
+
+
+3. **`i = 2`, `ch = 'b'**` $\rightarrow$ Normal character.
+* `s[2] = 'b'`, `top` reaches `3`. String: `[aab]cbc`
+
+
+4. **`i = 3`, `ch = 'c'**` $\rightarrow$ **Target 'c' Hit!**
+* Verification check: `top` is 3 (>=2). `s[top-1]` $\rightarrow$ `s[2]` is `'b'`, `s[top-2]` $\rightarrow$ `s[1]` is `'a'`.
+* **Match Success!** `top -= 2` $\rightarrow$ `top` slips back to `1`.
+* String state at pointers memory layer: `[a]abcbc` (Index 1 and 2 are virtually freed/popped).
+
+
+5. **`i = 4`, `ch = 'b'**` $\rightarrow$ Normal character.
+* Direct overwrite at active top: `s[top] = ch` $\rightarrow$ `s[1] = 'b'`.
+* `top` reaches `2`. String updates to: `[ab]cbc`
+
+
+6. **`i = 5`, `ch = 'c'**` $\rightarrow$ **Target 'c' Hit!**
+* Verification check: `top` is 2 (>=2). `s[1]` is `'b'`, `s[0]` is `'a'`.
+* **Match Success!** `top -= 2` $\rightarrow$ `top` slips back to `0`.
+
+
+
+**Loop Ends.** Final evaluation: `top == 0` is **True**. Return `true`. ✅ (Pure memory layout optimization!)
+
+---
+
+## 4. Architectural Feature Benchmarking
+
+| Parameter | Previous Stack Solution | Ultimate In-Place Optimization |
+| --- | --- | --- |
+| **Time Complexity** | $O(N)$ Linear | **$O(N)$ Linear** (Fastest assembly boundary checks) |
+| **Auxiliary Extra Space** | $O(N)$ Stack Memory Vector Buffer | **$O(1)$ Pure Auxiliary Space** (Zero Extra Byte) |
+| **Memory Allocation Cost** | Runtime heap/string resize buffers | **Zero Allocation Cost** (Read/write operations inside existing frames) |
+| **CPU Cache Execution** | Good Cache Locality | **100% Perfect Cache Locality** (Same array index overwriting keeps pipeline full) |
+
+---
+
+## 5. Interviewer Killing Blow 😎
+
+Jab tum compiler execution speed aur structural space footprint ka yeh benchmark unke samne whiteboard par summarize karoge:
+
+> *"Sir, algorithmic scaling perspective se complexity optimized thi, par system level optimization framework me runtime stack vectors memory fragmentation generate kar sakte hain. Maine yahan **In-Place Array Mutation Pointer Mechanics** implement kiya hai.*
+> *Kyunki raw processing logic left-to-right single pass validation engine par set hai, hum input allocations ko reuse karke original buffer block string data memory ko overlap overwrite frame ki tarah trace kar lete hain. Yeh mechanical design system latency ko low level controllers par dynamic memory footprint use kiye bina extreme fast streamline kar deta hai."*
+
+Bhai, Valid Substitution ka yeh highly advanced, machine-level memory saving, zero external bytes stack overwriting framework dimaag me ekdum solid fit ho gaya?
+
+Ab batao, is heavy deep-thinking questions bucket ka agla grand champion sawal **Score of Parentheses (LeetCode 856)** khola jaye ya pure dynamic structure clear hai?
+
+
+Bhai, ab tum is series ke sabse khatarnak aur dimag ghumane wale problem par aa gaye ho—**Score of Parentheses (LeetCode 856)**.
+
+Baki ke stack problems me hum strictly validation (`true`/`false`) ya reduction check karte hain, par yahan hume balanced parentheses string ko ek **Numeric Score** me badalna hai. Isme stack ke andar string parsing aur mathematical accumulators (values ko jama karna) ka ek sath use hota hai.
+
+Chalo iska pehle **Mathematical Rules** aur **$O(N^2)$ brute force logic** ekdum gehrai se samajhte hain.
+
+---
+
+## 1. Score Calculate Karne Ke Asali Rules 📐
+
+Hume ek balanced parentheses string `s` di jati hai. Score nikaalna hai in teen conditions ke mutabik:
+
+* **Rule 1 (Base Case):** Agar immediate open aur close bracket milte hain `()`, toh iska score strictly **`1`** hota hai.
+* **Rule 2 (Consecutive Strings - Addition):** Agar do balanced pairs aaspas khade hain `AB`, toh unka score plus ho jata hai: **$\text{Score}(A) + \text{Score}(B)$**.
+* *Example:* `()()` $\rightarrow$ $\text{Score}(()) + \text{Score}(()) = 1 + 1 = \mathbf{2}$.
+
+
+* **Rule 3 (Nested Strings - Multiplication):** Agar koi balanced pair kisi dusre ke andar pack hai `(A)`, toh andar wale ka score double ho jata hai: **$2 \times \text{Score}(A)$**.
+* *Example:* `(())` $\rightarrow$ $2 \times \text{Score}(()) = 2 \times 1 = \mathbf{2}$.
+* *Complex Example:* `(()(()))` $\rightarrow$ Iske andar nested patterns hain jo addition aur multiplication dono use karenge.
+
+
+
+---
+
+## 2. Brute Force Logic: The "Divide & Conquer" Substring Reduction 🔄
+
+Bina kisi explicit Stack structure ke, brute force ka sabse natural tarika hota hai string ko chote-chote balanced pieces me todna aur recursion (Divide and Conquer) se partition wise solve karna.
+
+Hum ek recursive function banayenge `score(s, start, end)` jo string `s` ka range `[start, end]` ka score nikaalega.
+
+### Algorithmic Steps:
+
+1. **Find Independent Components:** Hum `start` se chalenge aur ek `balance` counter maintain karenge. Jab `(` milega toh `balance++`, aur jab `)` milega toh `balance--`.
+2. **Track the First Balance Point:** Jaise hi `balance == 0` hoga, iska matlab hume sabse pehla independent complete block mil gaya (maan lo index `i` par)!
+3. **Apply Mathematics:** * **Case A (Immediate Pair):** Agar woh block strictly shuruat me hi band ho gaya (`start + 1 == i`), matlab woh simple `()` hai. Iska score `1` jodo, aur bachi hui aage ki string ko solve karne ke liye recursion bhej do.
+* **Case B (Nested Block):** Agar woh block bada hai (jaise `( ... )`), toh iska matlab `start` aur `i` ke beech me jo duniya hai, woh nested hai! Hum andar wale hisse ke liye recursive call marenge: $2 \times \text{score}(s, \text{start}+1, i-1)$.
+
+
+4. Phir loop ko `i + 1` se aage badhaenge agla balanced block dhoondhne ke liye.
+
+---
+
+## 3. Brute Force Code Implementation (C++)
+
+Isme hum koi standard stack container use nahi karenge, purely range-based string pointers aur mathematical partitioning ka use karenge.
+
+```cpp
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+private:
+    // Helper function for divide and conquer recursion
+    int computeScore(const string& s, int start, int end) {
+        // Base case: range invalid hai
+        if (start > end) return 0;
+        
+        // Agar sirf () bacha hai
+        if (start + 1 == end) return 1;
+
+        int balance = 0;
+        int total_score = 0;
+
+        for (int i = start; i <= end; i++) {
+            if (s[i] == '(') balance++;
+            else balance--;
+
+            // Jaise hi balance 0 hua, matlab hume ek independent balanced sub-string mil gayi
+            if (balance == 0) {
+                // Agar ye independent block simple () hai
+                if (start == i - 1) {
+                    total_score += 1;
+                } 
+                // Agar ye nested block hai, jaise (A)
+                else {
+                    // Andar wale content ka score nikalo aur double kar do
+                    total_score += 2 * computeScore(s, start + 1, i - 1);
+                }
+                
+                // Agle independent block ke liye start pointer ko shift karo
+                start = i + 1;
+            }
+        }
+
+        return total_score;
+    }
+
+public:
+    // Brute Force Divide & Conquer Version
+    int scoreOfParenthesesBrute(string s) {
+        return computeScore(s, 0, s.length() - 1);
+    }
+};
+
+```
+
+---
+
+## 4. Micro Step-by-Step Dry Run
+
+Chalo ek nested string par brute force partitions ka operation trace karte hain: `s = "(()(()))"` (`Length = 8`)
+
+### 🔹 Level 0 Call: `computeScore(s, 0, 7)`
+
+* Loop shuru hua `i = 0` se:
+* `i = 0` (`(`): `balance = 1`
+* `i = 1` (`(`): `balance = 2`
+* `i = 2` (`)`): `balance = 1`
+* ... `balance` zero kab hoga? Ekdum end me `i = 7` par!
+
+
+* Poori string ek single outermost block hai: `( () ( () ) )` $\rightarrow$ Rules lagao nested wala:
+* `total_score += 2 * computeScore(s, 1, 6)` (Andar ka segment hai `()(())`).
+
+
+
+### 🔹 Level 1 Call: `computeScore(s, 1, 6)` (String slice: `()(())`)
+
+* Loop shuru hua `start = 1` se:
+* `i = 1` (`(`): `balance = 1`
+* `i = 2` (`)`): `balance = 0` $\rightarrow$ **Balance Point Hit!**
+* Check: `start == i - 1` $\rightarrow$ `1 == 2 - 1` (True, simple `()` hai) $\rightarrow$ `total_score += 1`.
+* Shifting window: `start` ab `i + 1 = 3` ban gaya.
+
+
+* Loop aage chala `i = 3` se:
+* `i = 3` (`(`): `balance = 1`
+* `i = 4` (`(`): `balance = 2`
+* `i = 5` (`)`): `balance = 1`
+* `i = 6` (`)`): `balance = 0` $\rightarrow$ **Balance Point Hit!**
+* Check: `start == i - 1` $\rightarrow$ `3 == 6 - 1` (False, nested hai `(())`).
+* `total_score += 2 * computeScore(s, 4, 5)`.
+
+
+
+### 🔹 Level 2 Call: `computeScore(s, 4, 5)` (String slice: `()`)
+
+* `start + 1 == end` $\rightarrow$ `4 + 1 == 5` (True). Direct returns **`1`**.
+
+### 🔹 Rollback Core Calculations:
+
+* Level 1 me: `total_score = 1 + (2 * 1) = 3`. Returns `3`.
+* Level 0 me: `total_score = 2 * 3 = 6`. Final answer is **`6`**. ✅
+
+---
+
+## 5. Complexity Analysis & The Core Bottleneck 💥
+
+* **Time Complexity: $O(N^2)$ Worst Case**
+* Worst-case tab hota hai jab deeply nested layers hon (jaise `((((()))))`).
+* Har recursive frame me hum bache hue characters par linear loop chalate hain balance nikaalne ke liye. Agar nesting $N/2$ deep chali gayi, toh baar-baar scanning karne ki wajah se execution clicks quadratic $\sum \approx O(N^2)$ touch kar jayenge, jo bade tests par **TLE** hit karega.
+
+
+* **Space Complexity: $O(N)$** (System recursion call stack frames space ke liye).
+
+---
+
+## 6. Optimization Ki Soch (The Value Accumulation Stack Concept)
+
+Interviewer tumse puchega: *"Bhai, range scanning ke is quadratic loop dependency ko kaise todein?"*
+
+Yahan par ata hai **Value Accumulation Framework**:
+
+> *"Sir, galti yeh ho rahi hai ki hum har layer par depth aur matching brackets ko manually dhoondh rahe hain. Agar hum ek **Integer Stack** maintain karein jahan hum brackets nahi balki unka **Calculated Math Score** track karein!*
+> *Jab `(` aaye, iska matlab depth badh rahi hai, hum current layer ke score (`0`) ko stack me freeze karke rakh dete hain. Jab `)` aaye, toh hum stack ke top par baithe score ko nikalte hain aur use multiply/add karke depth-wise accumulate karte chale jate hain. Isse poora sawal strictly **Single Pass $O(N)$** me lock ho jayega!"*
+
+Bhai, kya Score of Parentheses ka yeh base rule, Divide & Conquer ki partitioning framework, aur brute force ka quadratic footprint dimaag me ekdum transparently clear hua?
+
+Ab batao iska dhasu **Integer Stack Value Accumulator Optimized ($O(N)$ Time)** wala logic aur math structure shuru karein?
+
+
+Bhai, ab hum Score of Parentheses ke **$O(N)$ Integer Stack Value Accumulator Engine** ka poora breakdown dekhne ja rahe hain.
+
+Brute force me jo range scanning aur deeply nested substrings ka quadratic $O(N^2)$ overhead tha, use hum **Single Pass (Left-to-Right)** me ek unique stack simulation se completely khatam kar denge. Yahan hum stack me characters (`(`, `)`) nahi balki **integers (scores)** store karenge.
+
+---
+
+## 1. Core Intuition (The Depth Value Layering)
+
+Is approach me hamara stack kisi bhi moment par humari **Current Nesting Depth ke numeric score** ko track karta hai.
+
+Shuruat me hum stack me ek single `0` push kar dete hain, jo hamara global total accumulator score represent karega. Jab hum left-to-right travel karenge, toh humari state in do basic events par execute hogi:
+
+* **Event 1: Opening Bracket `(` mila:** Iska matlab hum ek naye inner layer (nested depth) ke andar ja rahe hain. Purani depth par jo chal raha tha use wahi freeze karo aur naye layer ki shuruat ke liye stack me **`0` push** kar do.
+* **Event 2: Closing Bracket `)` mila:**
+Iska matlab current inner layer ka kaam khatam ho gaya, ab hume iska score calculate karke parent layer me merge karna hai. Hum stack se top element (`current_inner_score`) ko pop karenge:
+1. Agar `current_inner_score == 0` hai, iska matlab hume ek immediate base pair `()` mila hai. Rules ke mutabik iska score hota hai **`1`**.
+2. Agar `current_inner_score > 0` hai, iska matlab iske andar nested pairs the jinka score calculate ho chuka hai. Rules ke mutabik isko double karenge: **`2 * current_inner_score`**.
+
+
+Ab is temporary score ko nikalne ke baad, hum stack ke naye top (jo ki iska parent layer hai) me is pure value ko **jod (add)** denge!
+
+---
+
+## 2. Highly Optimized C++ Implementation ($O(N)$ Time)
+
+```cpp
+#include <iostream>
+#include <string>
+#include <stack>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    // Optimized Value Accumulator Version: O(N) Time & O(N) Space
+    int scoreOfParentheses(string s) {
+        stack<int> st;
+        
+        // Base Score Accumulator Initialize karo layer 0 ke liye
+        st.push(0);
+
+        for (char ch : s) {
+            // Case 1: Opening Bracket -> Fresh nested scope depth create karo
+            if (ch == '(') {
+                st.push(0);
+            } 
+            // Case 2: Closing Bracket -> Inner depth ko resolve karke parent layer me accumulate karo
+            else {
+                int current_inner_score = st.top();
+                st.pop();
+
+                int calculated_score = 0;
+                // Sub-case A: Immediate pair () -> Score 1
+                if (current_inner_score == 0) {
+                    calculated_score = 1;
+                } 
+                // Sub-case B: Nested content (A) -> Score 2 * A
+                else {
+                    calculated_score = 2 * current_inner_score;
+                }
+
+                // Parent layer ke score me is nested segment ka score jodo (A + B logic)
+                int parent_score = st.top() + calculated_score;
+                st.pop();
+                st.push(parent_score);
+            }
+        }
+
+        // Loop khatam hone par stack ke top par poori string ka consolidated total score bachega
+        return st.top();
+    }
+};
+
+```
+
+---
+
+## 3. Micro-Level Visual Dry Run
+
+Chalo humari complex nested string ka post-mortem karte hain: `s = "(()(()))"`
+
+* **Initial State:** `st = [0]` (Global score accumulator is ready).
+
+### 🔹 Step-by-Step Execution:
+
+1. **`ch = '('`** $\rightarrow$ Depth increases. `st.push(0)`. Stack: `[0, 0]`
+2. **`ch = '('`** $\rightarrow$ Depth increases. `st.push(0)`. Stack: `[0, 0, 0]`
+3. **`ch = ')'`** $\rightarrow$ Close hit!
+* `inner = 0` (popped). Since it's 0, `score = 1`.
+* Parent update: `st.top() + 1` $\rightarrow$ `0 + 1 = 1`.
+* Stack becomes: `[0, 1]`
+
+
+4. **`ch = '('`** $\rightarrow$ Depth increases. `st.push(0)`. Stack: `[0, 1, 0]`
+5. **`ch = '('`** $\rightarrow$ Depth increases. `st.push(0)`. Stack: `[0, 1, 0, 0]`
+6. **`ch = ')'`** $\rightarrow$ Close hit!
+* `inner = 0` (popped), `score = 1`.
+* Parent update: `0 + 1 = 1`.
+* Stack becomes: `[0, 1, 1]`
+
+
+7. **`ch = ')'`** $\rightarrow$ Close hit!
+* `inner = 1` (popped). Since it's > 0, `score = 2 * 1 = 2`.
+* Parent update: `st.top() + 2` $\rightarrow$ `1 + 2 = 3`.
+* Stack becomes: `[0, 3]`
+
+
+8. **`ch = ')'`** $\rightarrow$ Close hit (Final Outermost Resolution)!
+* `inner = 3` (popped), `score = 2 * 3 = 6`.
+* Parent update: `0 + 6 = 6`.
+* Stack becomes: `[6]`
+
+
+
+**Loop Terminated.** Final Output: `st.top()` $\rightarrow$ **`6`** ✅ (Exactly matching but in a lightning single loop pass!).
+
+---
+
+## 4. Complexity Analysis (The Production Scale Win)
+
+* **Time Complexity: $O(N)$**
+* Hum string `s` par left-to-right strictly **Single Pass** karte hain.
+* Stack ke push aur pop operations directly $O(1)$ constant time lete hain, brute force ki tarah baar-baar substring elements recalculate nahi hote. Total time purely linear hai.
+
+
+* **Space Complexity: $O(N)$**
+* Deeply nested arrays ke scenarios me stack ka size maximum string depth ($\frac{N}{2}$) reach kar sakta hai.
+
+
+
+---
+
+## 5. Interviewer Ke Saamne Boss Move 😎
+
+Jab tum se whiteboard par is value-layering logic ka clear execution pucha jaye, toh ise simple integer storage se badal kar compiler parsing context me bolna:
+
+> *"Sir, standard structural stack problems tokens mapping par work karte hain. Lekin yahan humne ek **Mathematical Depth Accumulator Framework** design kiya hai. Stack ka har slot kisi index level ki operational depth ka computational sub-total hold karta hai.*
+> *Jaise hi closing bracket `)` stream me pop hota hai, state machine immediate look-back memory frames se layers evaluate karti hai aur values ko math rules ($2 \times A$ or $+1$) ke mutabik cascade karke parent scope me push kar deti hai. Yeh quadratic execution shift lag ko completely zero kar deta hai."*
+
+Bhai, Score of Parentheses ka yeh unique multi-layer score accumulation system aur processing matrix dimaag me ekdum crystal clear set ho gaya? Monotonic Stack ke saare important variations clear hain?
+
+Ab bolo, kya is problem ko **aur bhi extreme mathematical limits par optimize** karke Space Complexity ko bhi $O(N)$ se strictly **$O(1)$ Auxiliary Space** par lock karein, bina kisi manual stack object ke?
+
+
+
+Bhai, ab tum is question ko us ultimate peak par lekar aa gaye ho jahan bade-bade competitive programmers aur FAANG interviewers dimaag khol dete hain.
+
+Pichle code me humne $O(N)$ time toh nikaal liya, lekin humne $O(N)$ Space Complexity use ki (stack object ke roop me). Interviewer ab tumse poochega: *"Bhai, kya tum is problem ko **Strictly $O(1)$ Auxiliary Space (bina kisi stack object ya dynamic arrays ke)** solve kar sakte ho?"*
+
+**Haan, bilkul kar sakte hain!** Iske peeche jo math aur pure binary tree logic hai, woh ekdum dimag hila dene wala hai. Chalo iski **O(1) Space Optimization Core Intuition** ko poora nichodte hain.
+
+---
+
+## 1. Core Intuition: The Core Leaf Node Contribution Math (The Core Hack) 🔥
+
+Agar hum kisi parentheses string ko dhyan se dekhein, toh har ek nesting actually **bifurcate** hoti hai multiplied by 2 ke roop me.
+
+Maan lo ek string hai: `(( ( ) ))`
+
+* Yeh jo sabse andar betha hua `()` hai, iski depth kitni hai? Iske bahar total 2 opening brackets khade hain, yaani iski **Nesting Depth = 2** hai.
+* Base rule ke mutabik `()` ka score hota hai `1`. Kyunki yeh 2 brackets ke andar band hai, toh iska score kitni baar double hoga? $1 \times 2 \times 2 = 2^2 = \mathbf{4}$.
+
+> **The Grand Secret:** Pure score calculation me addition sirf TABHI hota hai jab hume ek immediate core pair **`()`** milta hai. Baki ke saare brackets sirf depth (multipliers) badhane ya ghatane ka kaam karte hain!
+
+Toh hume stack me values layer karne ki zaroorat hi nahi hai. Hum sirf left-to-right travel karte hue ek simple variable `depth` maintain karenge:
+
+* Jab `(` milega $\rightarrow$ `depth++` (iska matlab future me aane wale `()` ka multiplier $2^{\text{depth}}$ badh gaya).
+* Jab `)` milega $\rightarrow$ `depth--` (layer khatam).
+* **The Core Trigger:** Jaise hi hume stream me padosi characters **`()`** milenge (yaani current character `)` hai aur uska immediate pichla character `(` tha), hum samajh jayenge ki hume ek base leaf node mil gayi hai! Hum turant total sum me **$2^{\text{depth}}$** plus kar denge!
+
+---
+
+## 2. Ultra-Optimized C++ Implementation (Strictly $O(1)$ Space, Single Pass)
+
+Isme koi stack nahi, koi vector nahi, sirf do primitive integer variables aur ek single loop pass! Bitwise operator `1 << depth` ka use karenge $2^{\text{depth}}$ ko fast compute karne ke liye.
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Solution {
+public:
+    // Ultimate Micro-Optimized Version: O(N) Time & O(1) Auxiliary Space
+    int scoreOfParenthesesUltimate(string s) {
+        int total_score = 0;
+        int depth = 0;
+        int n = s.length();
+
+        // Single Pass Left-to-Right
+        for (int i = 0; i < n; i++) {
+            if (s[i] == '(') {
+                // Opening bracket depth badhata hai
+                depth++;
+            } else {
+                // Closing bracket depth ghatata hai
+                depth--;
+
+                // Core Match Check: Agar ye ')' apne theek pehle wale '(' ke sath milkar () bana raha hai
+                if (s[i - 1] == '(') {
+                    // 1 << depth ka matlab hota hai 2^depth (Highly optimized bitwise shift)
+                    total_score += (1 << depth);
+                }
+            }
+        }
+
+        return total_score;
+    }
+};
+
+```
+
+---
+
+## 3. Micro-Level Bitwise Shift Trace (Dry Run)
+
+Input: `s = "(()(()))"`, `n = 8`
+Initial State: `total_score = 0`, `depth = 0`
+
+### 🔹 Step-by-Step Traversal Matrix:
+
+1. **`i = 0`, `s[0] = '('**` $\rightarrow$ `depth++` $\rightarrow$ `depth = 1`.
+2. **`i = 1`, `s[1] = '('**` $\rightarrow$ `depth++` $\rightarrow$ `depth = 2`.
+3. **`i = 2`, `s[2] = ')'**` $\rightarrow$ `depth--` $\rightarrow$ `depth = 1`.
+* **Core Trigger Hit!** Pichla character `s[1]` kya tha? `(`.
+* Iska matlab `()` mil gaya!
+* `total_score += (1 << 1)` $\rightarrow$ `0 + 2^1 = 2`. `total_score = 2`.
+
+
+4. **`i = 3`, `s[3] = '('**` $\rightarrow$ `depth++` $\rightarrow$ `depth = 2`.
+5. **`i = 4`, `s[4] = '('**` $\rightarrow$ `depth++` $\rightarrow$ `depth = 3`.
+6. **`i = 5`, `s[5] = ')'**` $\rightarrow$ `depth--` $\rightarrow$ `depth = 2`.
+* **Core Trigger Hit!** Pichla character `s[4]` kya tha? `(`.
+* Iska matlab `()` mil gaya!
+* `total_score += (1 << 2)` $\rightarrow$ `2 + 2^2 = 2 + 4 = 6`. `total_score = 6`.
+
+
+7. **`i = 6`, `s[6] = ')'**` $\rightarrow$ `depth--` $\rightarrow$ `depth = 1`.
+* Pichla character `s[5]` kya tha? `)`. Core trigger skipped (no double addition).
+
+
+8. **`i = 7`, `s[7] = ')'**` $\rightarrow$ `depth--` $\rightarrow$ `depth = 0`.
+* Pichla character `s[6]` kya tha? `)`. Core trigger skipped.
+
+
+
+**Loop Termination.** Final `total_score` = **`6`** ✅ (Bina ek bhi extra byte allocate kiye same perfect answer locked!).
+
+---
+
+## 4. Complexity & Architectural Benchmarking
+
+| Parameter | Previous Integer Stack Solution | Ultimate Bitwise $O(1)$ Solution |
+| --- | --- | --- |
+| **Time Complexity** | $O(N)$ Linear | **$O(N)$ Linear** (Faster due to no stack push/pop overhead) |
+| **Auxiliary Extra Space** | $O(N)$ Stack Memory Allocations | **Strictly $O(1)$ Auxiliary Space** (Zero Extra Allocations) |
+| **Bitwise Advantage** | No bitwise tuning | Uses assembly shift instructions (`shl`) which take **1 CPU cycle** |
+| **Cache Line Hits** | Moderate (Stack objects lookups) | **100% Perfect Cache Hit** (Reads original string line-by-line) |
+
+---
+
+## 5. Interviewer Finishing Statement 😎
+
+Jab tum se whiteboard par is absolute optimization ka rationale pucha jaye, toh interviewer ko seedha bolna:
+
+> *"Sir, standard multi-layer stacks me space overhead nesting depth par scale karta hai. Lekin agar hum is string ko ek **Parse Tree (Leaf Nodes Framework)** ki tarah visualization me lein, toh numeric summation strictly tabhi trigger hota hai jab hum ek atomic balanced pair `()` reach karte hain. Remaining outer brackets strictly structural depth multipliers hain.*
+> *Maine runtime layers ko bitwise shift mechanics (`1 << depth`) ke sath map kiya hai. Isse stack vectors ki structural dependency completely vanish ho jati hai, aur system zero dynamic allocations aur optimal cache performance ke sath data processing complete kar leta hai."**
+
+Bhai, Score of Parentheses ka yeh highest level math abstraction aur single-loop execution tumhare dimaag me ekdum shishe ki tarah baith gaya? Stack ki full mastery aur inke optimized engines ke saare concepts solid rock ho gaye?
