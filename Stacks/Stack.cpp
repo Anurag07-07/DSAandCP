@@ -11,6 +11,46 @@ class ListNode{
   }
 };
 
+
+
+class MinStack {
+public:
+stack<pair<int,int>> st;
+    MinStack() {
+        
+    }
+    
+    void push(int value) {
+      if (st.empty())
+      {
+        st.push(make_pair(value,value));
+      }else{
+        int mini = min(value,st.top().second);
+        st.push(make_pair(value,mini));
+      }
+      
+    }
+    
+    void pop() {
+        st.pop();
+    }
+    
+    int top() {
+      if (st.empty())
+      return-1;
+      
+      return st.top().first;
+    }
+    
+    int getMin() {
+      if (st.empty())
+      return-1;
+
+      return st.top().second;
+    }
+};
+
+
 class StackArray{
   int *arr;
   int size;

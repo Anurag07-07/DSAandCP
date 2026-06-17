@@ -197,6 +197,53 @@ class Solution{
 };
 
 
+class Solution {
+public:
+    vector<int> asteroidCollision(vector<int>& asteroids) {
+      stack<int> st;
+      for(int x:asteroids){
+        if (st.empty())
+        {
+          st.push(x);
+        }else{
+          //Check the Sign 
+          if (x>0 && st.top()>0)
+          {
+            st.push(x);
+          }else{
+              while (!st.empty() && abs(st.top())<=abs(x))
+              {
+                st.pop();
+              }
+              if (st.empty())
+              {
+                st.push(x);
+              }else{
+                int maxi =  st.top();
+                st.pop();
+                int value = max(abs(maxi),abs(x));
+                if (value==abs(maxi))
+                {
+                  st.push(maxi);
+                }else{
+                  st.push(x);                  
+                }
+              }
+            }
+          }
+      }
+      
+      vector<int> ans;
+      while (!st.empty())
+      {
+        ans.push_back(st.top());
+        st.pop();
+      }
+      reverse(ans.begin(),ans.end());
+      return ans;
+    }
+};
+
 int main(int argc, char const *argv[])
 {
   return 0;

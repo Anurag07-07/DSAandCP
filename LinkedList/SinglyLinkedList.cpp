@@ -90,6 +90,8 @@ int lengthofLinkedList(ListNode* head){
   return count;
 }
 
+
+
 int lengthofLinkedListRecursive(ListNode* head){
   if(head==nullptr){
     return 0;
@@ -459,14 +461,267 @@ ListNode* SortList(ListNode* head){
   return head;
 }
 
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* Reverse(ListNode* head){
+      if (head==nullptr || head->next==nullptr)
+      {
+        return head;
+      }
+      
+      //Find the New head
+      ListNode* nhead = Reverse(head->next);
+
+      head->next->next = head;
+      head->next = nullptr;
+
+      return nhead;
+    }
+    void reorderList(ListNode* head) {
+       //Split The Array 
+       ListNode* slow = head;
+       ListNode* fast = head;
+
+       while (fast&&fast->next)
+       {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow==fast)
+        {
+          break;
+        }
+        
+       }
+
+       ListNode* list2 = slow->next;
+       slow->next = nullptr;
+
+       ListNode* head1 = head;
+       ListNode* head2 = Reverse(list2);
+
+       ListNode* dummy = new ListNode(0);
+       ListNode* temp = dummy;
+       while (head1&&head2)
+       {
+          temp->next = head1;
+          head1 = head1->next;
+          temp = temp->next;
+          temp->next = head2;
+          head2 = head2->next;
+          temp = temp->next;
+       }
+       
+       if (head1)
+       {
+        temp->next = head1;
+       }
+
+       if (head2)
+       {
+        temp->next = head2;
+       }
+
+       head = dummy->next;
+    }
+
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+      if (head==nullptr)
+        return head;
+
+      ListNode* curr = head;   
+      int len = 0;
+      while (curr!=nullptr)
+      {
+        len++;
+        curr = curr->next;
+      }
+
+      if(len==n){
+        return head->next;
+      }
+
+      int count = len-n;
+
+      ListNode* temp = head;      
+      ListNode* fut = head->next;      
+      
+      while (count>1 && fut->next)
+      {
+        temp = fut;
+        fut = fut->next;
+        count--;
+      }
+
+      temp->next = fut->next;
+      delete fut;
+      return head;
+    }
+
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+      ListNode* head1 = l1;   
+      ListNode* head2 = l2;
+      ListNode* dummy = new ListNode(0);
+      ListNode* tail = dummy;
+      int carry = 0;
+      int val1;
+      int val2;
+      while (head1&&head2)
+      {
+        val1 = (head1->value+head2->value+carry)%10;
+        val2 = (head1->value+head2->value+carry)/10;
+        carry = val2;
+        tail->next = new ListNode(val1);
+        tail = tail->next;
+        head1 = head1->next;
+        head2 = head2->next;
+      }
+
+      while (head1)
+      {
+        val1 = (head1->value+carry)%10;
+        val2 = (head1->value+carry)/10;
+        carry = val2;
+        tail->next = new ListNode(val1);
+        tail = tail->next;
+        head1 = head1->next;
+      }
+      
+      while (head2)
+      {
+        val1 = (head2->value+carry)%10;
+        val2 = (head2->value+carry)/10;
+        carry = val2;
+        tail->next = new ListNode(val1);
+        tail = tail->next;
+        head2 = head2->next;
+      }
+      
+      if (carry)
+      {
+        tail->next = new ListNode(carry);
+        tail = tail->next;
+      }
+      return dummy->next;
+    }
+
+    ListNode* reverseBetween(ListNode* head, int left, int right) {
+
+      if (head==nullptr  || head->next==nullptr)
+      {
+        return head;
+      }
+
+      if (left==right)
+      {
+        return head;
+      }
+
+            
+      int cnt1 = left; 
+      ListNode* curr = head;
+      ListNode* prev = nullptr;
+      while (--left)
+      {
+        prev = curr;
+        curr = curr->next;
+      }
+
+      ListNode* temp = curr;
+      int cnt = right-cnt1;
+      while (cnt--)
+      {
+        temp = temp->next;
+      }
+
+      ListNode* joining = temp->next;
+      temp->next = nullptr;
+
+      ListNode* rev = Reverse(curr);
+
+      cout<<endl;
+      if (cnt1==1)
+      {
+        ListNode* curr = rev;
+        while (curr->next)
+        {
+          curr = curr->next;
+        }
+
+        curr->next = joining;
+        RecursiveTraversal(rev);
+        return rev;
+      }else{
+        prev->next = rev;
+        ListNode* trave = rev;
+        while (trave->next)
+        {
+          trave = trave->next;
+        }
+  
+        trave->next = joining;
+        return head;
+      }
+      return head;
+    }
+    ListNode* ReverseK(ListNode* head,int k){
+      if (head==nullptr || head->next==nullptr)
+      {
+        return head;
+      }
+
+      //Check the Length of list Left
+      int len = lengthofLinkedList(head);
+      if (len<k)
+      {
+        return head;
+      }
+      
+
+      //Now If Count is Lesst than K Dont Reverse
+      ListNode* curr = head;
+      ListNode* prev = nullptr;
+      ListNode* next = nullptr;
+      int count = k;
+      while (count>=1 && curr)
+      {
+        next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
+        count--;
+      }
+
+      head->next =  ReverseK(curr,k);
+
+      return prev;
+    }
+    ListNode* reverseKGroup(ListNode* head, int k) {
+      return ReverseK(head,k);   
+    }
+};
+
 int main()
 {
   int n;cin>>n;
   ListNode* l1 = CreateList(n);
-  ListNode* l2 = CreateList(n);
+  Solution s;
+  // s.removeNthFromEnd(l1,2);
+  // s.reverseBetween(l1,1,2);
+  // ListNode* l2 = CreateList(n);
   // RecursiveTraversal(l1);
   // cout<<lengthofLinkedListRecursive(l1);
-  ListNode* l3 = MergeTwoSortedList(l1,l2);
-  RecursiveTraversal(l3);
+  // ListNode* l3 = MergeTwoSortedList(l1,l2);
+  ListNode* ans = s.reverseKGroup(l1,3);
+  RecursiveTraversal(ans);
   return 0;
 }
