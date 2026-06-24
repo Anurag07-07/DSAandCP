@@ -38,7 +38,7 @@ Node* rightRotation(Node* root){
   root->height = 1+ max(getheight(root->left),getheight(root->right));
   child->height = 1+ max(getheight(child->left),getheight(child->right));
   return child;
-  
+
 }
 
 Node* leftRotation(Node* root){
@@ -191,15 +191,99 @@ if (!root)
 }
 
 
-void PreOrderRecursive(Node* root){
-  if (!root)
+void PreOrderIterative(Node* root){
+  vector<int> ans;
+  if(root==nullptr) return;
+
+  stack<Node*> st;
+  st.push(root);
+  while (!st.empty())
   {
-    return;
+    Node* temp = st.top();
+    st.pop();
+
+    ans.push_back(temp->val);
+
+    if (temp->right)
+    {
+      st.push(temp->right);
+    }
+
+    if (temp->left)
+    {
+      st.push(temp->left);
+    }
+    
   }
 
-  PreOrderRecursive(root->left);
-  cout<<root->val<<" ";
-  PreOrderRecursive(root->right);
+  for(int x:ans){
+    cout<<x<<" ";
+  }
+  
+}
+
+void InOrderIterative(Node* root){
+  vector<int> ans;
+  if(root==nullptr) return;
+
+  stack<Node*> st;
+  Node* curr = root;
+  while (!curr || !st.empty())
+  {
+    while (!curr)
+    {
+      st.push(curr);
+      curr = curr->left;
+    }
+
+    curr = st.top();
+    st.pop();
+
+    ans.push_back(curr->val);
+    
+    curr = curr->right;
+  }
+
+  for(int x:ans){
+    cout<<x<<" ";
+  }
+}
+
+
+void PostOrderTraversal(Node* root){
+  vector<int> ans;
+  if(root==nullptr) return;
+  
+  stack<Node*> st1;
+  stack<int> st2;
+  st1.push(root);
+  while (!st1.empty())
+  {
+    Node* temp = st1.top();
+    st1.pop();
+    st2.push(temp->val);
+
+    if (temp->left)
+    {
+      st1.push(temp->left);
+    }
+
+    if (temp->right)
+    {
+      st1.push(temp->right);
+    }
+  }
+
+  while (!st2.empty())
+  {
+    ans.push_back(st2.top());
+    st2.pop();
+  }
+
+  for(int x:ans){
+    cout<<x<<" ";
+  }
+  
 }
 
 
@@ -217,6 +301,7 @@ int main()
   root = insert(root,95);
   root = deleteNode(root,95);
 
-  PreOrderRecursive(root);
+  // InOrderIterative(root);
+  PostOrderTraversal(root);
   return 0;
 }

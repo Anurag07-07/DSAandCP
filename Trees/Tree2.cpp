@@ -12,6 +12,37 @@ struct TreeNode{
   }
 };
 
+void PreOrderIterative(TreeNode* root){
+  vector<int> ans;
+  if(root==nullptr) return;
+
+  stack<TreeNode*> st;
+  st.push(root);
+  while (!st.empty())
+  {
+    TreeNode* temp = st.top();
+    st.pop();
+
+    ans.push_back(temp->val);
+
+    if (temp->right)
+    {
+      st.push(temp->right);
+    }
+
+    if (temp->left)
+    {
+      st.push(temp->left);
+    }
+    
+  }
+
+  for(int x:ans){
+    cout<<x<<" ";
+  }
+  
+}
+
 vector<int> LeftViewIterative(TreeNode* root){
   queue<TreeNode*> q;
   vector<int> ans;
