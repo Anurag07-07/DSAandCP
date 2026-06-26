@@ -143,6 +143,7 @@ void RightViewRecursive(TreeNode* root,int level,vector<int>& ans){
   RightViewRecursive(root->left,level+1,ans);
 }
 
+
 vector<int> TopView(TreeNode* root){
   vector<int> ans;
   if (!root)

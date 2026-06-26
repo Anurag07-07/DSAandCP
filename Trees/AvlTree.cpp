@@ -250,6 +250,111 @@ void InOrderIterative(Node* root){
 }
 
 
+void VerticalOrderTraversal(Node* root){
+  vector<int> ans;
+  if (root==nullptr)
+  {
+    return;
+  }
+  
+  queue<pair<Node*,int>> q;
+  map<int,vector<int>> mp;
+  q.push(make_pair(root,0));
+  while (!q.empty())
+  {
+    pair<Node*,int> temp = q.front();
+    int elem = temp.first->val;
+    int idx = temp.second;
+    q.pop();
+    mp[idx].push_back(elem);
+
+    if (temp.first->left)
+    {
+      q.push(make_pair(temp.first->left,idx-1));
+    }
+
+    if (temp.first->right)
+    {
+      q.push(make_pair(temp.first->right,idx+1));
+    }
+  }
+
+  for(auto &i:mp){
+    vector<int> a = i.second;
+    for(int y:a){
+      ans.push_back(y);
+    }
+  }
+
+
+  for(int x:ans){
+    cout<<x<<" ";
+  }
+  
+}
+
+int Height(Node* root){
+  if (!root)
+  {
+    return 0;
+  }
+  return 1+max(Height(root->left),Height(root->right));
+}
+
+void VerticalOrderTraversal1(Node* root){
+  vector<int> ans;
+  if (root==nullptr)
+  {
+    return;
+  }
+
+  //Find the max horizontal distance
+  int n = Height(root);
+  vector<vector<int>> index(2*n+1);
+  int maxlen = INT_MIN;
+  int minlen = INT_MAX;
+
+  queue<pair<Node*,int>> q;
+  q.push(make_pair(root,0));
+  while (!q.empty())
+  {
+    pair<Node*,int> temp = q.front();
+    int elem = temp.first->val;
+    int idx = temp.second;
+
+    maxlen = max(maxlen,idx);
+    minlen = min(minlen,idx);
+
+    q.pop();
+    index[n+idx].push_back(elem);
+
+    if (temp.first->left)
+    {
+      q.push(make_pair(temp.first->left,idx-1));
+    }
+
+    if (temp.first->right)
+    {
+      q.push(make_pair(temp.first->right,idx+1));
+    }
+  }
+
+  for (int i = minlen; i <= maxlen; i++)
+  {
+    for (int j = 0; j < index[i+n].size(); j++)
+    {
+      cout<<index[i+n][j]<<" ";
+      // ans.push_back(index[i+n][j]);
+    }
+
+  }
+
+  for(int x:ans){
+    cout<<x<<" ";
+  }
+  
+}
+
 void PostOrderTraversal(Node* root){
   vector<int> ans;
   if(root==nullptr) return;
@@ -286,6 +391,120 @@ void PostOrderTraversal(Node* root){
   
 }
 
+void DiagonalOrderTraversal(Node* root){
+  vector<int> ans;
+  if (root==nullptr) return;
+
+  int D = 0;
+  queue<pair<Node*,int>> q;
+  q.push(make_pair(root,D));
+
+  map<int,vector<int>> mp;
+  while (!q.empty())
+  {
+    //Find the Element
+    pair<Node*,int> temp = q.front();
+    q.pop();
+
+    int elem = temp.first->val;
+    int diagonal = temp.second;
+
+    mp[diagonal].push_back(elem);
+
+    if (temp.first->left)
+    {
+      q.push(make_pair(temp.first->left,D+1));
+    }
+
+    if (temp.first->right)
+    {
+      q.push(make_pair(temp.first->right,D));
+    }
+    
+  }
+
+
+  for(auto &i:mp){
+    vector<int> a = i.second;
+    for(int y:a){
+      ans.push_back(y);
+    }
+  }
+
+
+  for(int x:ans){
+    cout<<x<<" ";
+  }
+}
+
+void LeftTraverse(Node* root,vector<int>& ans){
+  if (root==nullptr)
+  {
+    return;
+  }
+  
+  if (root->left==nullptr && root->right==nullptr)
+  {
+    return;
+  }
+
+  //Push the Element
+  ans.push_back(root->val);
+  if (root->left)
+  {
+    ReverseRight(root->left,ans);
+  }else{
+    ReverseRight(root->right,ans);
+  }
+}
+
+void LeafTraversal(Node* root,vector<int>& ans){
+  if (root==nullptr)
+  {
+    return;
+  }
+  
+  if (root->left==nullptr && root->right==nullptr)
+  {
+    ans.push_back(root->val);
+    return;
+  }
+  
+  LeafTraversal(root->left,ans);
+  LeafTraversal(root->right,ans);
+}
+
+void ReverseRight(Node* root,vector<int>& ans){
+  if (root==nullptr)
+  {
+    return;
+  }
+
+  if (root->left==nullptr && root->right==nullptr)
+  {
+    return;
+  }
+
+  if (root->left)
+  {
+    ReverseRight(root->left,ans);
+  }else{
+    ReverseRight(root->right,ans);
+  }
+  ans.push_back(root->val);
+}
+
+
+void BoundaryTraversal(Node* root){
+  vector<int> ans;
+  LeftTraverse(root,ans);
+  LeafTraversal(root,ans);
+  ReverseRight(root->right,ans);
+  for(int x:ans){
+    cout<<x<<" ";
+  }
+}
+
 
 int main()
 {
@@ -302,6 +521,12 @@ int main()
   root = deleteNode(root,95);
 
   // InOrderIterative(root);
-  PostOrderTraversal(root);
+  // PostOrderTraversal(root);
+  // cout<<endl;
+  // VerticalOrderTraversal1(root);
+  // DiagonalOrderTraversal(root);
+  BoundaryTraversal(root);
   return 0;
 }
+
+
