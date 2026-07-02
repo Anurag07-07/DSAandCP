@@ -11,8 +11,6 @@ struct MaxHeap{
     total_size = n;
   }
 
-
-  
   //Insert into the heap
   void insert(int value){
     //If Heap size aval or not

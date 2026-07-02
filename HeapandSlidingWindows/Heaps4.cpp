@@ -2,6 +2,7 @@
 using namespace std;
 void KthSmallest(){
   /*
+  
   => Brute Force
   For Duplicate both will consider
   Sort the Array and find the k-1 index elment return it
@@ -9,10 +10,9 @@ void KthSmallest(){
   Time = O(nlogn)
   Space = O(1) for heap sort O(n) for merge sort
 
-
   => Better
   Min Heap
-  Delete Root Element K Times 
+  Delete Root Element K Times
 
   Time = O(n)+(K*logn) for deleting K-1 Element ro in worst case
   K==N so Time = O(n) +  O(nlogn)
